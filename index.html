@@ -20,7 +20,7 @@
   </script>
 </head>
 
-<body class="bg-orange-50 font-sans text-stone-800 pb-20 md:pb-0">
+<body class="bg-orange-50 font-sans text-stone-800 pb-20 lg:pb-0">
 
 <!-- ============================================================
      CART DRAWER OVERLAY
@@ -29,23 +29,19 @@
 
 <!-- CART DRAWER -->
 <aside id="cart-drawer"
-  class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col translate-x-full"
-  style="transition: none;">
+  class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col"
+  style="transform: translateX(100%);">
 
-  <!-- Drawer Header -->
   <div class="flex items-center justify-between px-5 py-4 border-b border-orange-100">
     <div class="flex items-center gap-3">
       <h2 class="font-serif text-2xl font-semibold text-stone-900">Your Order</h2>
       <span id="cart-header-count" class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
     </div>
     <button onclick="closeCart()" class="w-9 h-9 rounded-xl bg-orange-50 hover:bg-orange-100 flex items-center justify-center text-stone-500 hover:text-stone-700">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M6 18L18 6M6 6l12 12"/>
-      </svg>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
   </div>
 
-  <!-- Empty State -->
   <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
     <div class="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center">
       <svg class="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -57,10 +53,8 @@
     <button onclick="closeCart()" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl">Browse Menu</button>
   </div>
 
-  <!-- Cart Items -->
   <div id="cart-items" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-3"></div>
 
-  <!-- Cart Footer -->
   <div id="cart-footer" class="hidden border-t border-orange-100 px-5 py-5 space-y-4">
     <div class="flex items-center justify-between text-sm text-stone-400">
       <span>Subtotal</span>
@@ -90,25 +84,26 @@
 <header class="fixed top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-b border-orange-100 h-16">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
 
-    <a href="#home" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0">
+    <a href="index.html" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0">
       Amber <em class="text-orange-500 not-italic">Kitchen</em>
     </a>
 
     <nav class="hidden lg:flex items-center gap-8">
-      <a href="#home"    class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Home</a>
-      <a href="#menu"    class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Menu</a>
-      <a href="#story"   class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Our Story</a>
-      <a href="#reserve" class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Reserve</a>
+      <a href="index.html"  class="text-xs font-semibold tracking-widest uppercase text-orange-500 border-b-2 border-orange-400 pb-0.5">Home</a>
+      <a href="menu.html"   class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Menu</a>
+      <a href="#story"      class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Our Story</a>
+      <a href="#reserve"    class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Reserve</a>
     </nav>
 
     <div class="flex items-center gap-2 sm:gap-3">
-      <!-- Cart Button (Desktop) -->
+      <!-- Cart opens ONLY on click -->
       <button onclick="openCart()" class="relative flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 sm:px-4 py-2 rounded-xl">
         <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
           <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
         <span class="hidden sm:block text-xs font-semibold text-orange-600">Cart</span>
-        <span id="nav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full items-center justify-center">0</span>
+        <!-- Badge: shows total item count -->
+        <span id="nav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none">0</span>
       </button>
       <button class="hidden sm:block bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm">
         Order Now
@@ -124,7 +119,6 @@
 <section id="home" class="pt-16">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
 
-    <!-- Left -->
     <div class="text-center lg:text-left">
       <span class="inline-flex items-center gap-2 bg-orange-100 text-orange-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
         <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
@@ -137,23 +131,15 @@
         Where tradition meets modern artistry. Locally sourced, seasonally inspired, and passionately crafted for every plate.
       </p>
       <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
-        <a href="#menu" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl shadow-md">
-          Explore Menu
-        </a>
-        <a href="#reserve" class="bg-white border border-stone-200 hover:border-orange-300 text-stone-700 font-semibold text-sm px-7 py-3.5 rounded-2xl">
-          Book a Table
-        </a>
+        <a href="#menu" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm px-7 py-3.5 rounded-2xl shadow-md">Explore Menu</a>
+        <a href="#reserve" class="bg-white border border-stone-200 hover:border-orange-300 text-stone-700 font-semibold text-sm px-7 py-3.5 rounded-2xl">Book a Table</a>
       </div>
     </div>
 
-    <!-- Right Image -->
     <div class="relative mt-4 lg:mt-0">
       <div class="absolute inset-0 bg-orange-200 rounded-3xl translate-x-2 translate-y-2 sm:translate-x-3 sm:translate-y-3"></div>
-      <img
-        src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80"
-        alt="Fine dining"
-        class="relative z-10 rounded-3xl w-full h-64 sm:h-80 lg:h-96 object-cover shadow-xl border-4 border-white"
-      >
+      <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80"
+        alt="Fine dining" class="relative z-10 rounded-3xl w-full h-64 sm:h-80 lg:h-96 object-cover shadow-xl border-4 border-white">
       <div class="absolute bottom-4 left-4 sm:bottom-5 sm:left-5 z-20 bg-white rounded-2xl shadow-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
@@ -193,20 +179,126 @@
 
 
 <!-- ============================================================
-     MENU
+     FOOD CATEGORIES  — App-style
+============================================================ -->
+<section class="pb-10 sm:pb-14 bg-orange-50">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+    <div class="flex items-center justify-between mb-5 sm:mb-6">
+      <div>
+        <p class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-1">✦ Browse By</p>
+        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Food <em class="text-orange-500">Categories</em></h2>
+      </div>
+      <a href="menu.html" class="text-xs font-semibold text-orange-500 border-b border-orange-400 pb-0.5 shrink-0">See All</a>
+    </div>
+
+    <!-- ▸ MOBILE: horizontal scroll icon+label cards -->
+    <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:hidden" style="scrollbar-width:none">
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🥗</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Starters</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🍲</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Soups</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🍝</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Pasta</span>
+      </a>
+
+      <!-- Active / highlighted category -->
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-orange-500 border-2 border-orange-500 rounded-2xl flex items-center justify-center shadow-md text-2xl">🥩</div>
+        <span class="text-xs font-bold text-orange-500 text-center leading-tight">Mains</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🍕</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Pizza</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🦞</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Seafood</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🍮</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Desserts</span>
+      </a>
+
+      <a href="menu.html" class="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+        <div class="w-16 h-16 bg-white border-2 border-orange-100 rounded-2xl flex items-center justify-center shadow-sm text-2xl">🍹</div>
+        <span class="text-xs font-semibold text-stone-600 text-center leading-tight">Drinks</span>
+      </a>
+
+    </div>
+
+    <!-- ▸ DESKTOP: 8-col grid -->
+    <div class="hidden sm:grid sm:grid-cols-4 lg:grid-cols-8 gap-3">
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🥗</div>
+        <span class="text-xs font-semibold text-stone-600">Starters</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🍲</div>
+        <span class="text-xs font-semibold text-stone-600">Soups</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🍝</div>
+        <span class="text-xs font-semibold text-stone-600">Pasta</span>
+      </a>
+
+      <!-- Active -->
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-orange-500 border border-orange-500 rounded-2xl p-4 hover:bg-orange-600 text-center">
+        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">🥩</div>
+        <span class="text-xs font-bold text-white">Mains</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🍕</div>
+        <span class="text-xs font-semibold text-stone-600">Pizza</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🦞</div>
+        <span class="text-xs font-semibold text-stone-600">Seafood</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🍮</div>
+        <span class="text-xs font-semibold text-stone-600">Desserts</span>
+      </a>
+
+      <a href="menu.html" class="flex flex-col items-center gap-3 bg-white border border-orange-100 rounded-2xl p-4 hover:border-orange-300 hover:shadow-md text-center">
+        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-2xl">🍹</div>
+        <span class="text-xs font-semibold text-stone-600">Drinks</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     MENU  — Chef's Picks
 ============================================================ -->
 <section id="menu" class="py-10 sm:py-14 bg-white">
   <div class="max-w-6xl mx-auto px-4 sm:px-6">
 
-    <!-- Header -->
     <div class="flex items-end justify-between mb-6 sm:mb-8">
       <div>
         <p class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2">✦ Our Menu</p>
-        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-stone-900">
-          Chef's <em class="text-orange-500">Picks</em>
-        </h2>
+        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-stone-900">Chef's <em class="text-orange-500">Picks</em></h2>
       </div>
-      <a href="#" class="hidden sm:block text-sm font-semibold text-orange-500 border-b border-orange-400 pb-0.5 shrink-0 ml-4">View All</a>
+      <a href="menu.html" class="hidden sm:block text-sm font-semibold text-orange-500 border-b border-orange-400 pb-0.5 shrink-0 ml-4">View All</a>
     </div>
 
     <!-- Category Pills -->
@@ -222,9 +314,8 @@
     <!-- Featured Horizontal Cards -->
     <div class="space-y-3 sm:space-y-4 mb-8 sm:mb-10">
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-        <img src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=400&q=80"
-          alt="Truffle Pasta" class="w-28 sm:w-40 object-cover shrink-0">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md">
+        <img src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=400&q=80" alt="Truffle Pasta" class="w-28 sm:w-40 object-cover shrink-0">
         <div class="p-3 sm:p-5 flex flex-col justify-between flex-1 min-w-0">
           <div>
             <div class="flex gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 flex-wrap">
@@ -245,9 +336,8 @@
         </div>
       </div>
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80"
-          alt="Pepperoni" class="w-28 sm:w-40 object-cover shrink-0">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80" alt="Pepperoni" class="w-28 sm:w-40 object-cover shrink-0">
         <div class="p-3 sm:p-5 flex flex-col justify-between flex-1 min-w-0">
           <div>
             <div class="flex gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
@@ -267,9 +357,8 @@
         </div>
       </div>
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"
-          alt="Garden Bowl" class="w-28 sm:w-40 object-cover shrink-0">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl sm:rounded-3xl overflow-hidden flex hover:border-orange-300 hover:shadow-md">
+        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80" alt="Garden Bowl" class="w-28 sm:w-40 object-cover shrink-0">
         <div class="p-3 sm:p-5 flex flex-col justify-between flex-1 min-w-0">
           <div>
             <div class="flex gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
@@ -291,13 +380,11 @@
       </div>
     </div>
 
-    <!-- Grid Label -->
+    <!-- Grid -->
     <p class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4 sm:mb-5">✦ Full Menu</p>
-
-    <!-- 2 / 3 / 4 col Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md cursor-pointer">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md">
         <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80" alt="Ribeye" class="w-full h-32 sm:h-40 object-cover">
         <div class="p-3">
           <h4 class="font-serif text-sm sm:text-base font-semibold text-stone-900 leading-tight mb-1">Grilled Ribeye</h4>
@@ -312,7 +399,7 @@
         </div>
       </div>
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md cursor-pointer">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md">
         <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=400&q=80" alt="Salmon" class="w-full h-32 sm:h-40 object-cover">
         <div class="p-3">
           <h4 class="font-serif text-sm sm:text-base font-semibold text-stone-900 leading-tight mb-1">Seared Salmon</h4>
@@ -327,7 +414,7 @@
         </div>
       </div>
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md cursor-pointer">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md">
         <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=400&q=80" alt="Chocolate Lava" class="w-full h-32 sm:h-40 object-cover">
         <div class="p-3">
           <h4 class="font-serif text-sm sm:text-base font-semibold text-stone-900 leading-tight mb-1">Chocolate Lava</h4>
@@ -342,7 +429,7 @@
         </div>
       </div>
 
-      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md cursor-pointer">
+      <div class="bg-orange-50 border border-orange-100 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-md">
         <img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=400&q=80" alt="Cocktail" class="w-full h-32 sm:h-40 object-cover">
         <div class="p-3">
           <h4 class="font-serif text-sm sm:text-base font-semibold text-stone-900 leading-tight mb-1">Amber Cocktail</h4>
@@ -389,55 +476,38 @@
     <h2 class="font-serif text-3xl sm:text-4xl font-light text-stone-900">What Guests <em class="text-orange-500">Say</em></h2>
   </div>
   <div class="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 sm:px-6 max-w-6xl mx-auto" style="scrollbar-width:none">
-
     <div class="shrink-0 w-60 sm:w-72 bg-orange-50 border border-orange-100 rounded-2xl p-4 sm:p-5">
       <p class="text-orange-400 text-sm tracking-widest mb-3">★★★★★</p>
       <p class="font-serif text-base italic text-stone-600 leading-relaxed mb-4">"The truffle pasta was transcendent. Every bite told a story crafted with love."</p>
       <div class="flex items-center gap-3">
-        <img src="https://i.pravatar.cc/80?img=1" alt="" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full">
-        <div>
-          <p class="text-sm font-semibold text-stone-800">Ayesha Rahman</p>
-          <p class="text-xs text-stone-400">March 2026</p>
-        </div>
+        <img src="https://i.pravatar.cc/80?img=1" alt="" class="w-8 h-8 rounded-full">
+        <div><p class="text-sm font-semibold text-stone-800">Ayesha Rahman</p><p class="text-xs text-stone-400">March 2026</p></div>
       </div>
     </div>
-
     <div class="shrink-0 w-60 sm:w-72 bg-orange-50 border border-orange-100 rounded-2xl p-4 sm:p-5">
       <p class="text-orange-400 text-sm tracking-widest mb-3">★★★★★</p>
       <p class="font-serif text-base italic text-stone-600 leading-relaxed mb-4">"Amber Kitchen redefines fine dining. Impeccable service and stunning flavors."</p>
       <div class="flex items-center gap-3">
-        <img src="https://i.pravatar.cc/80?img=5" alt="" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full">
-        <div>
-          <p class="text-sm font-semibold text-stone-800">Luca Bianchi</p>
-          <p class="text-xs text-stone-400">Feb 2026</p>
-        </div>
+        <img src="https://i.pravatar.cc/80?img=5" alt="" class="w-8 h-8 rounded-full">
+        <div><p class="text-sm font-semibold text-stone-800">Luca Bianchi</p><p class="text-xs text-stone-400">Feb 2026</p></div>
       </div>
     </div>
-
     <div class="shrink-0 w-60 sm:w-72 bg-orange-50 border border-orange-100 rounded-2xl p-4 sm:p-5">
       <p class="text-orange-400 text-sm tracking-widest mb-3">★★★★★</p>
       <p class="font-serif text-base italic text-stone-600 leading-relaxed mb-4">"Our anniversary dinner was absolutely magical. Nothing short of perfection."</p>
       <div class="flex items-center gap-3">
-        <img src="https://i.pravatar.cc/80?img=9" alt="" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full">
-        <div>
-          <p class="text-sm font-semibold text-stone-800">Sofia Mendes</p>
-          <p class="text-xs text-stone-400">Jan 2026</p>
-        </div>
+        <img src="https://i.pravatar.cc/80?img=9" alt="" class="w-8 h-8 rounded-full">
+        <div><p class="text-sm font-semibold text-stone-800">Sofia Mendes</p><p class="text-xs text-stone-400">Jan 2026</p></div>
       </div>
     </div>
-
     <div class="shrink-0 w-60 sm:w-72 bg-orange-50 border border-orange-100 rounded-2xl p-4 sm:p-5">
       <p class="text-orange-400 text-sm tracking-widest mb-3">★★★★★</p>
       <p class="font-serif text-base italic text-stone-600 leading-relaxed mb-4">"The grilled ribeye was the best steak I have ever had. I'll return every month."</p>
       <div class="flex items-center gap-3">
-        <img src="https://i.pravatar.cc/80?img=12" alt="" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full">
-        <div>
-          <p class="text-sm font-semibold text-stone-800">James Holloway</p>
-          <p class="text-xs text-stone-400">Jan 2026</p>
-        </div>
+        <img src="https://i.pravatar.cc/80?img=12" alt="" class="w-8 h-8 rounded-full">
+        <div><p class="text-sm font-semibold text-stone-800">James Holloway</p><p class="text-xs text-stone-400">Jan 2026</p></div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -452,22 +522,17 @@
       <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-stone-900 mb-3">
         Reserve Your <em class="text-orange-500">Table</em>
       </h2>
-      <p class="text-stone-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
-        Plan your perfect evening. We make every night feel like a celebration.
-      </p>
+      <p class="text-stone-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">Plan your perfect evening. We make every night feel like a celebration.</p>
       <div class="max-w-sm mx-auto space-y-3 text-left">
         <input type="text" placeholder="Your Full Name"
           class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300">
         <div class="grid grid-cols-2 gap-3">
-          <input type="date"
-            class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-3 py-3 text-sm text-stone-700">
-          <input type="time" value="19:00"
-            class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-3 py-3 text-sm text-stone-700">
+          <input type="date" class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-3 py-3 text-sm text-stone-700">
+          <input type="time" value="19:00" class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-3 py-3 text-sm text-stone-700">
         </div>
         <input type="number" placeholder="Number of Guests" min="1" max="20"
           class="w-full bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-stone-700 placeholder-stone-300">
-        <button onclick="handleReserve(this)"
-          class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md">
+        <button onclick="handleReserve(this)" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md">
           Confirm Reservation
         </button>
       </div>
@@ -492,7 +557,7 @@
         <h5 class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4">Explore</h5>
         <ul class="space-y-2.5 text-sm text-stone-400">
           <li><a href="#" class="hover:text-orange-500">Our Story</a></li>
-          <li><a href="#" class="hover:text-orange-500">Gallery</a></li>
+          <li><a href="menu.html" class="hover:text-orange-500">Full Menu</a></li>
           <li><a href="#" class="hover:text-orange-500">Private Dining</a></li>
           <li><a href="#" class="hover:text-orange-500">Events</a></li>
         </ul>
@@ -518,25 +583,26 @@
 ============================================================ -->
 <nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white/95 backdrop-blur-md border-t border-orange-100 flex items-center justify-around h-20 px-2">
 
-  <a href="#home" class="flex flex-col items-center gap-1 px-3 py-2 text-orange-500">
+  <a href="index.html" class="flex flex-col items-center gap-1 px-3 py-2 text-orange-500">
     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     <span class="text-xs font-semibold">Home</span>
   </a>
 
-  <a href="#menu" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
+  <a href="menu.html" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
     </svg>
     <span class="text-xs font-semibold">Menu</span>
   </a>
 
-  <!-- Elevated Cart Button -->
+  <!-- Cart — opens ONLY on click -->
   <button onclick="openCart()" class="flex flex-col items-center gap-1 relative">
     <div class="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg -mt-7 border-4 border-white relative">
       <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
       </svg>
-      <span id="mob-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full items-center justify-center">0</span>
+      <!-- Badge on mobile cart button -->
+      <span id="mob-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none">0</span>
     </div>
     <span class="text-xs font-semibold text-stone-400 mt-0.5">Cart</span>
   </button>
@@ -563,37 +629,31 @@
 
 
 <!-- ============================================================
-     JAVASCRIPT — CART LOGIC
+     JAVASCRIPT
 ============================================================ -->
 <script>
-  /* ---------- CART STATE ---------- */
-  let cart = []; // { id, name, price, img, qty }
+  let cart = [];
 
-  /* ---------- OPEN / CLOSE ---------- */
+  /* ── OPEN / CLOSE — only triggered by explicit button clicks ── */
   function openCart() {
     document.getElementById('cart-drawer').style.transform = 'translateX(0)';
     document.getElementById('cart-overlay').classList.remove('hidden');
   }
-
   function closeCart() {
     document.getElementById('cart-drawer').style.transform = 'translateX(100%)';
     document.getElementById('cart-overlay').classList.add('hidden');
   }
 
-  /* ---------- ADD TO CART ---------- */
+  /* ── ADD TO CART — updates badge only, does NOT open cart ── */
   function addToCart(id, name, price, img) {
     const existing = cart.find(i => i.id === id);
-    if (existing) {
-      existing.qty++;
-    } else {
-      cart.push({ id, name, price, img, qty: 1 });
-    }
+    if (existing) { existing.qty++; }
+    else          { cart.push({ id, name, price, img, qty: 1 }); }
     renderCart();
     updateBadges();
-    openCart();
+    // ✅ Drawer stays closed — user must click Cart button to open
   }
 
-  /* ---------- CHANGE QTY ---------- */
   function changeQty(id, delta) {
     const item = cart.find(i => i.id === id);
     if (!item) return;
@@ -603,25 +663,22 @@
     updateBadges();
   }
 
-  /* ---------- REMOVE ITEM ---------- */
   function removeItem(id) {
     cart = cart.filter(i => i.id !== id);
     renderCart();
     updateBadges();
   }
 
-  /* ---------- CLEAR CART ---------- */
   function clearCart() {
     cart = [];
     renderCart();
     updateBadges();
   }
 
-  /* ---------- RENDER CART ---------- */
   function renderCart() {
-    const itemsEl   = document.getElementById('cart-items');
-    const emptyEl   = document.getElementById('cart-empty');
-    const footerEl  = document.getElementById('cart-footer');
+    const itemsEl  = document.getElementById('cart-items');
+    const emptyEl  = document.getElementById('cart-empty');
+    const footerEl = document.getElementById('cart-footer');
 
     if (cart.length === 0) {
       emptyEl.classList.remove('hidden');
@@ -629,101 +686,79 @@
       footerEl.classList.add('hidden');
       return;
     }
-
     emptyEl.classList.add('hidden');
     itemsEl.classList.remove('hidden');
     footerEl.classList.remove('hidden');
 
-    let html = '';
-    cart.forEach(item => {
-      html += `
-        <div class="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl p-3">
-          <img src="${item.img}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-orange-200">
-          <div class="flex-1 min-w-0">
-            <p class="font-serif text-base font-semibold text-stone-900 leading-tight truncate">${item.name}</p>
-            <p class="text-xs text-stone-400 mt-0.5">$${item.price.toFixed(2)} each</p>
+    itemsEl.innerHTML = cart.map(item => `
+      <div class="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl p-3">
+        <img src="${item.img}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-orange-200">
+        <div class="flex-1 min-w-0">
+          <p class="font-serif text-base font-semibold text-stone-900 leading-tight truncate">${item.name}</p>
+          <p class="text-xs text-stone-400 mt-0.5">$${item.price.toFixed(2)} each</p>
+        </div>
+        <div class="flex flex-col items-end gap-2 shrink-0">
+          <button onclick="removeItem('${item.id}')" class="text-stone-300 hover:text-red-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="changeQty('${item.id}',-1)" class="w-6 h-6 rounded-lg bg-white border border-stone-200 hover:border-orange-400 text-stone-600 flex items-center justify-center text-sm font-bold">−</button>
+            <span class="text-sm font-bold text-stone-800 w-4 text-center">${item.qty}</span>
+            <button onclick="changeQty('${item.id}',1)" class="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center text-sm font-bold">+</button>
           </div>
-          <div class="flex flex-col items-end gap-2 shrink-0">
-            <button onclick="removeItem('${item.id}')" class="text-stone-300 hover:text-red-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-            <div class="flex items-center gap-2">
-              <button onclick="changeQty('${item.id}',-1)" class="w-6 h-6 rounded-lg bg-white border border-stone-200 hover:border-orange-400 text-stone-600 flex items-center justify-center text-sm font-bold">−</button>
-              <span class="text-sm font-bold text-stone-800 w-4 text-center">${item.qty}</span>
-              <button onclick="changeQty('${item.id}',1)" class="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center text-sm font-bold">+</button>
-            </div>
-            <p class="text-sm font-bold text-orange-500">$${(item.price * item.qty).toFixed(2)}</p>
-          </div>
-        </div>`;
-    });
-    itemsEl.innerHTML = html;
+          <p class="text-sm font-bold text-orange-500">$${(item.price * item.qty).toFixed(2)}</p>
+        </div>
+      </div>`).join('');
 
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const tax      = subtotal * 0.1;
-    const total    = subtotal + tax;
-
-    document.getElementById('cart-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('cart-tax').textContent      = `$${tax.toFixed(2)}`;
-    document.getElementById('cart-total').textContent    = `$${total.toFixed(2)}`;
-    document.getElementById('cart-header-count').textContent = cart.reduce((s,i) => s + i.qty, 0);
+    const tax = subtotal * 0.1;
+    document.getElementById('cart-subtotal').textContent     = `$${subtotal.toFixed(2)}`;
+    document.getElementById('cart-tax').textContent          = `$${tax.toFixed(2)}`;
+    document.getElementById('cart-total').textContent        = `$${(subtotal + tax).toFixed(2)}`;
+    document.getElementById('cart-header-count').textContent = cart.reduce((s, i) => s + i.qty, 0);
   }
 
-  /* ---------- UPDATE BADGES ---------- */
+  /* ── BADGES — show item count on both cart buttons ── */
   function updateBadges() {
     const total = cart.reduce((s, i) => s + i.qty, 0);
-    const ids   = ['nav-badge', 'mob-badge'];
-    ids.forEach(id => {
+    ['nav-badge', 'mob-badge'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (total > 0) {
-        el.textContent = total;
-        el.classList.remove('hidden');
-        el.classList.add('flex');
-      } else {
-        el.classList.add('hidden');
-        el.classList.remove('flex');
-      }
+      if (total > 0) { el.textContent = total; el.classList.remove('hidden'); el.classList.add('flex'); }
+      else           { el.classList.add('hidden'); el.classList.remove('flex'); }
     });
   }
 
-  /* ---------- CHECKOUT ---------- */
   function handleCheckout() {
     const btn = document.querySelector('#cart-footer button:first-child');
     btn.textContent = '✓ Order Placed!';
-    btn.classList.replace('bg-orange-500','bg-green-500');
-    btn.classList.replace('hover:bg-orange-600','hover:bg-green-600');
+    btn.classList.replace('bg-orange-500', 'bg-green-500');
+    btn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600');
     setTimeout(() => {
-      cart = [];
-      renderCart();
-      updateBadges();
-      closeCart();
+      cart = []; renderCart(); updateBadges(); closeCart();
       btn.textContent = 'Checkout →';
-      btn.classList.replace('bg-green-500','bg-orange-500');
-      btn.classList.replace('hover:bg-green-600','hover:bg-orange-600');
+      btn.classList.replace('bg-green-500', 'bg-orange-500');
+      btn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600');
     }, 1800);
   }
 
-  /* ---------- CATEGORY FILTER ---------- */
   function filterCat(el) {
     document.querySelectorAll('.cat-btn').forEach(b => {
-      b.classList.remove('bg-orange-500','text-white','border-orange-500');
-      b.classList.add('bg-white','text-stone-500','border-stone-200');
+      b.classList.remove('bg-orange-500', 'text-white', 'border-orange-500');
+      b.classList.add('bg-white', 'text-stone-500', 'border-stone-200');
     });
-    el.classList.add('bg-orange-500','text-white','border-orange-500');
-    el.classList.remove('bg-white','text-stone-500','border-stone-200');
+    el.classList.add('bg-orange-500', 'text-white', 'border-orange-500');
+    el.classList.remove('bg-white', 'text-stone-500', 'border-stone-200');
   }
 
-  /* ---------- RESERVATION BUTTON ---------- */
   function handleReserve(btn) {
     btn.textContent = '✓ Reservation Confirmed!';
-    btn.classList.replace('bg-orange-500','bg-green-500');
-    btn.classList.replace('hover:bg-orange-600','hover:bg-green-600');
+    btn.classList.replace('bg-orange-500', 'bg-green-500');
+    btn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600');
     setTimeout(() => {
       btn.textContent = 'Confirm Reservation';
-      btn.classList.replace('bg-green-500','bg-orange-500');
-      btn.classList.replace('hover:bg-green-600','hover:bg-orange-600');
+      btn.classList.replace('bg-green-500', 'bg-orange-500');
+      btn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600');
     }, 3000);
   }
 </script>
