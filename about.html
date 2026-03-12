@@ -6,14 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>Amber Kitchen | Our Story</title>
+    <title>Amber Kitchen | Reserve a Table</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <script>
@@ -21,106 +21,125 @@
         theme: {
           extend: {
             colors: {
-              or: {
-                50: "#fff7ed",
-                100: "#ffedd5",
-                200: "#fed7aa",
-                300: "#fdba74",
-                400: "#fb923c",
-                500: "#f97316",
-                600: "#ea580c",
-                700: "#c2410c",
-                800: "#9a3412",
-                900: "#7c2d12",
-              },
-              am: {
-                50: "#fffbeb",
-                100: "#fef3c7",
-                200: "#fde68a",
-                300: "#fcd34d",
-                400: "#fbbf24",
-                500: "#f59e0b",
-                600: "#d97706",
-                700: "#b45309",
-                800: "#92400e",
-                900: "#78350f",
-              },
-              warm: {
-                50: "#fdf8f6",
-                100: "#f5ede4",
-                200: "#ede0d5",
-                300: "#dfc9b8",
-                400: "#c9a890",
-                500: "#b08060",
-                600: "#8a5e40",
-                700: "#6b4428",
-                800: "#4a2e18",
-                900: "#2d1b0e",
-              },
-              ink: {
-                DEFAULT: "#1c1007",
-                light: "#3b2010",
-                mid: "#5c3820",
-                soft: "#8b6040",
-              },
+              orangePrimary: "#EA580C",
+              redDeep: "#96281b",
+              redPale: "#fdf0ee",
+              cream: "#f5f0eb",
+              textDark: "#1a1210",
+              textMid: "#4a3830",
+              borderSoft: "#e8ddd8",
+              gold: "#b8963e",
+              goldLight: "#d4af6a",
             },
             fontFamily: {
-              serif: ["Cormorant Garamond", "serif"],
               sans: ["DM Sans", "sans-serif"],
-            },
-            backgroundImage: {
-              hero: "linear-gradient(150deg,#fff7ed 0%,#ffedd5 30%,#fef3c7 60%,#fff7ed 100%)",
-              "hero-warm":
-                "linear-gradient(160deg,#fdf8f6 0%,#f5ede4 55%,#ede0d5 100%)",
-              "dark-rich":
-                "linear-gradient(135deg,#1c1007 0%,#2d1b0e 60%,#1c1007 100%)",
-              "or-grad": "linear-gradient(135deg,#ea580c 0%,#9a3412 100%)",
-              "or-soft": "linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%)",
-              "am-line":
-                "linear-gradient(90deg,transparent,#d97706 30%,#f59e0b 60%,transparent)",
-              "or-line":
-                "linear-gradient(90deg,transparent,#ea580c 30%,#f97316 60%,transparent)",
-              "card-glow":
-                "radial-gradient(ellipse at top left,rgba(234,88,12,.12) 0%,transparent 65%)",
+              serif: ["Cormorant Garamond", "serif"],
             },
             keyframes: {
-              fadeUp: {
-                from: { opacity: "0", transform: "translateY(24px)" },
+              slideUp: {
+                from: { opacity: "0", transform: "translateY(20px)" },
                 to: { opacity: "1", transform: "translateY(0)" },
               },
-              fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
-              slideLeft: {
-                from: { opacity: "0", transform: "translateX(-20px)" },
-                to: { opacity: "1", transform: "translateX(0)" },
+              successIn: {
+                from: { opacity: "0", transform: "scale(.94)" },
+                to: { opacity: "1", transform: "scale(1)" },
               },
-              pulse2: { "0%,100%": { opacity: "1" }, "50%": { opacity: ".6" } },
             },
             animation: {
-              "fade-up-1": "fadeUp 0.65s 0.1s both",
-              "fade-up-2": "fadeUp 0.65s 0.2s both",
-              "fade-up-3": "fadeUp 0.65s 0.35s both",
-              "fade-up-4": "fadeUp 0.65s 0.5s both",
-              "fade-in": "fadeIn 0.5s both",
-              "slide-l": "slideLeft 0.55s 0.2s both",
-              "dot-pulse": "pulse2 2s ease-in-out infinite",
-            },
-            boxShadow: {
-              "or-glow": "0 8px 32px rgba(234,88,12,.25)",
-              "or-sm": "0 4px 16px rgba(234,88,12,.18)",
-              card: "0 4px 32px rgba(28,16,7,.08)",
-              "card-lg": "0 16px 48px rgba(28,16,7,.12)",
+              "slide-up-1": "slideUp 0.6s 0.1s both",
+              "slide-up-2": "slideUp 0.6s 0.2s both",
+              "slide-up-3": "slideUp 0.6s 0.3s both",
+              "slide-up-4": "slideUp 0.6s 0.4s both",
+              "slide-up-5": "slideUp 0.6s 0.5s both",
+              "success-in": "successIn 0.45s ease both",
             },
           },
         },
       };
     </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* ── Prevent horizontal overflow ── */
+      body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
+      /* ── Calendar strip scrollbar hide ── */
+      #calStrip::-webkit-scrollbar {
+        display: none;
+      }
+
+      #calStrip {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* ── Cart drawer transition ── */
+      #cart-drawer {
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* ── Select arrow fix ── */
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath fill='%234a3830' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-color: #fff;
+      }
+
+      /* ── Step connector active ── */
+      .con-active {
+        background: #ea580c !important;
+      }
+
+      /* ── Smooth panel transition ── */
+      .step-panel {
+        animation: slideUp 0.3s ease both;
+      }
+
+      /* ── Safe area for mobile bottom nav ── */
+      .has-bottom-nav {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+      }
+
+      /* ── Responsive cal day min-width ── */
+      @media (max-width: 380px) {
+        .cal-day {
+          min-width: 42px !important;
+          padding-left: 6px !important;
+          padding-right: 6px !important;
+        }
+      }
+
+      /* ── Fix step bar label wrapping on xs ── */
+      @media (max-width: 420px) {
+        .step-label {
+          display: none;
+        }
+      }
+
+      /* ── Fix summary card on md ── */
+      @media (min-width: 1024px) {
+        #summaryCard {
+          display: block;
+        }
+      }
+    </style>
   </head>
 
   <body
-    class="font-sans bg-white text-ink overflow-x-hidden"
+    class="font-sans bg-white text-ink overflow-x-hidden pt-10 md:pt-10"
     style="padding-bottom: 72px"
   >
-    <!-- ═══════════ OVERLAY ═══════════ -->
+     <!-- ═══════════ OVERLAY ═══════════ -->
     <div
       id="cart-overlay"
       onclick="closeCart()"
@@ -356,7 +375,7 @@
         <nav class="hidden lg:flex items-center gap-6 xl:gap-8">
           <a
             href="index.html"
-            class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition"
+            class="text-xs font-semibold tracking-widest uppercase text-orange-500 border-b-2 border-orange-400"
             >Home</a
           >
           <a
@@ -366,12 +385,12 @@
           >
           <a
             href="about.html"
-            class="text-xs font-semibold tracking-widest uppercase text-orange-500 border-b-2 border-orange-400"
+            class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition"
             >Our Story</a
           >
           <a
             href="reserve.html"
-            class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition pb-0.5"
+            class="text-xs font-semibold tracking-widest uppercase text-stone-400 pb-0.5 hover:text-orange-500 transition"
             >Reserve</a
           >
         </nav>
@@ -398,6 +417,36 @@
               >0</span
             >
           </button>
+
+          <a
+            href="/login.html"
+            class="relative flex items-center gap-2 hover:bg-orange-100 px-3 sm:px-4 py-2 rounded-xl transition"
+          >
+            <!-- Replace this SVG with one of the options above -->
+            <svg
+              class="w-4 h-4 text-orange-500 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <span class="hidden sm:block text-xs font-semibold text-orange-600"
+              >Profile</span
+            >
+            <span
+              id="nav-badge"
+              class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none"
+              >0</span
+            >
+          </a>
+
           <!-- Hamburger for mobile/tablet -->
           <button
             onclick="toggleMenu()"
