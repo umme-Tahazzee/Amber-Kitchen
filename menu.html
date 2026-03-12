@@ -1,1051 +1,2381 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Amber Kitchen | Full Menu</title>
+  <title>Amber Kitchen | Reserve a Table</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          colors: {
+            orangePrimary: "#EA580C", redDeep: "#96281b", redPale: "#fdf0ee",
+            cream: "#f5f0eb", textDark: "#1a1210", textMid: "#4a3830",
+            borderSoft: "#e8ddd8", gold: "#b8963e", goldLight: "#d4af6a",
+          },
           fontFamily: {
             sans: ['DM Sans', 'sans-serif'],
             serif: ['Cormorant Garamond', 'serif'],
+          },
+          keyframes: {
+            slideUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            successIn: { from: { opacity: '0', transform: 'scale(.94)' }, to: { opacity: '1', transform: 'scale(1)' } },
+          },
+          animation: {
+            'slide-up-1': 'slideUp 0.6s 0.1s both',
+            'slide-up-2': 'slideUp 0.6s 0.2s both',
+            'slide-up-3': 'slideUp 0.6s 0.3s both',
+            'slide-up-4': 'slideUp 0.6s 0.4s both',
+            'slide-up-5': 'slideUp 0.6s 0.5s both',
+            'success-in': 'successIn 0.45s ease both',
           },
         },
       },
     }
   </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    /* ── Prevent horizontal overflow ── */
+    body { overflow-x: hidden; max-width: 100vw; }
+
+    /* ── Calendar strip scrollbar hide ── */
+    #calStrip::-webkit-scrollbar { display: none; }
+    #calStrip { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ── Cart drawer transition ── */
+    #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── Select arrow fix ── */
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath fill='%234a3830' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-color: #fff; }
+
+    /* ── Step connector active ── */
+    .con-active { background: #EA580C !important; }
+
+    /* ── Smooth panel transition ── */
+    .step-panel { animation: slideUp 0.3s ease both; }
+
+    /* ── Safe area for mobile bottom nav ── */
+    .has-bottom-nav { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
+    /* ── Responsive cal day min-width ── */
+    @media (max-width: 380px) {
+      .cal-day { min-width: 42px !important; padding-left: 6px !important; padding-right: 6px !important; }
+    }
+
+    /* ── Fix step bar label wrapping on xs ── */
+    @media (max-width: 420px) {
+      .step-label { display: none; }
+    }
+
+    /* ── Fix summary card on md ── */
+    @media (min-width: 1024px) {
+      #summaryCard { display: block; }
+    }
+  </style>
 </head>
 
-<body class="bg-orange-50 font-sans text-stone-800 pb-20 lg:pb-0">
+  <body class="bg-orange-50 font-sans text-stone-800 pb-20 lg:pb-0">
+    <!-- ═══════════ OVERLAY ═══════════ -->
+    <div
+      id="cart-overlay"
+      onclick="closeCart()"
+      class="hidden fixed inset-0 bg-black/40 z-40 transition-opacity"
+    ></div>
 
-<!-- ============================================================
-     CART DRAWER OVERLAY
-============================================================ -->
-<div id="cart-overlay" onclick="closeCart()" class="hidden fixed inset-0 bg-black/40 z-40"></div>
-
-<!-- CART DRAWER -->
-<aside id="cart-drawer"
-  class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col"
-  style="transform: translateX(100%);">
-
-  <div class="flex items-center justify-between px-5 py-4 border-b border-orange-100">
-    <div class="flex items-center gap-3">
-      <h2 class="font-serif text-2xl font-semibold text-stone-900">Your Order</h2>
-      <span id="cart-header-count" class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+    <!-- ═══════════ MOBILE MENU ═══════════ -->
+    <div
+      id="mobileMenu"
+      class="fixed inset-0 z-[1100] bg-cream hidden flex-col"
+      style="
+        transform: translateX(100%);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      "
+    >
+      <div class="flex flex-col h-full p-6 sm:p-10 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <span class="font-serif text-2xl font-bold text-black"
+              >Amber
+              <em class="text-orangePrimary not-italic">Kitchen</em></span
+            >
+            <p
+              class="font-serif italic text-gold/70 text-xs tracking-[0.3em] uppercase mt-0.5"
+            >
+              Fine Dining
+            </p>
+          </div>
+          <button
+            onclick="toggleMenu()"
+            class="w-9 h-9 rounded-full border bg-orangePrimary
+             border-white/20 text-white hover:border-gold hover:text-gold transition text-lg flex items-center justify-center flex-shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+        <div
+          class="h-px w-full mb-6"
+          style="
+            background: linear-gradient(
+              90deg,
+              transparent,
+              #b8963e 30%,
+              #d4af6a 60%,
+              transparent
+            );
+          "
+        ></div>
+        <ul class="flex flex-col gap-1 flex-1">
+          <li>
+            <a
+              href="index.html"
+              onclick="toggleMenu()"
+              class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black"
+              >Home</a
+            >
+          </li>
+          <li>
+            <a
+              href="menu.html"
+              onclick="toggleMenu()"
+              class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-orangePrimary"
+              >Menu</a
+            >
+          </li>
+          <li>
+            <a
+              href="about.html"
+              onclick="toggleMenu()"
+              class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black"
+              >About</a
+            >
+          </li>
+          <li>
+            <a
+              href="reserve.html"
+              onclick="toggleMenu()"
+              class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black"
+              >Reserve</a
+            >
+          </li>
+          <li>
+            <a
+              href="contact.html"
+              onclick="toggleMenu()"
+              class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black"
+              >Contact</a
+            >
+          </li>
+        </ul>
+        <div class="mt-auto space-y-3 pt-6">
+          <a
+            href="reserve.html"
+            onclick="toggleMenu()"
+            class="flex items-center justify-center gap-2 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.2em]"
+            style="
+              background: linear-gradient(135deg, #ea580c, #96281b);
+              box-shadow: 0 4px 15px rgba(192, 57, 43, 0.35);
+            "
+          >
+            <i class="fa-regular fa-calendar-check"></i> Book a Table
+          </a>
+          <div
+            class="flex gap-3 text-xs text-white/30 justify-center pt-2 flex-wrap"
+          >
+            <span>📞 +1 (555) 920-4200</span><span>·</span
+            ><span>Mon–Sun 12–11pm</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <button onclick="closeCart()" class="w-9 h-9 rounded-xl bg-orange-50 hover:bg-orange-100 flex items-center justify-center text-stone-500">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-  </div>
 
-  <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
-    <div class="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center">
-      <svg class="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
-      </svg>
-    </div>
-    <p class="font-serif text-xl text-stone-400 italic">Your cart is empty</p>
-    <p class="text-sm text-stone-400">Add some delicious dishes to get started</p>
-    <button onclick="closeCart()" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl">Browse Menu</button>
-  </div>
+    <!-- ═══════════ CART DRAWER ═══════════ -->
+    <aside
+      id="cart-drawer"
+      class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col"
+      style="transform: translateX(100%)"
+    >
+      <div
+        class="flex items-center justify-between px-5 py-4 border-b border-orange-100"
+      >
+        <div class="flex items-center gap-3">
+          <h2 class="font-serif text-2xl font-semibold text-stone-900">
+            Your Order
+          </h2>
+          <span
+            id="cart-header-count"
+            class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
+            >0</span
+          >
+        </div>
+        <button
+          onclick="closeCart()"
+          class="w-9 h-9 rounded-xl bg-orange-50 hover:bg-orange-100 flex items-center justify-center text-stone-500 hover:text-stone-700 flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div
+        id="cart-empty"
+        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
+      >
+        <div
+          class="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center"
+        >
+          <svg
+            class="w-10 h-10 text-orange-300"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+            />
+          </svg>
+        </div>
+        <p class="font-serif text-xl text-stone-400 italic">
+          Your cart is empty
+        </p>
+        <p class="text-sm text-stone-400">
+          Add some delicious dishes to get started
+        </p>
+        <button
+          onclick="closeCart()"
+          class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl"
+        >
+          Browse Menu
+        </button>
+      </div>
+      <div
+        id="cart-items"
+        class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-3"
+      ></div>
+      <div
+        id="cart-footer"
+        class="hidden border-t border-orange-100 px-5 py-5 space-y-4"
+      >
+        <div class="flex items-center justify-between text-sm text-stone-400">
+          <span>Subtotal</span
+          ><span id="cart-subtotal" class="font-semibold text-stone-700"
+            >$0.00</span
+          >
+        </div>
+        <div class="flex items-center justify-between text-sm text-stone-400">
+          <span>Tax (10%)</span
+          ><span id="cart-tax" class="font-semibold text-stone-700">$0.00</span>
+        </div>
+        <div
+          class="flex items-center justify-between border-t border-orange-100 pt-4"
+        >
+          <span class="font-bold text-stone-900">Total</span>
+          <span
+            id="cart-total"
+            class="font-serif text-2xl font-bold text-orange-500"
+            >$0.00</span
+          >
+        </div>
+        <button
+          class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-4 rounded-xl"
+        >
+          Checkout →
+        </button>
+        <button
+          onclick="clearCart()"
+          class="w-full border border-stone-200 hover:border-red-300 hover:text-red-500 text-stone-400 text-xs font-semibold py-2.5 rounded-xl"
+        >
+          Clear Cart
+        </button>
+      </div>
+    </aside>
 
-  <div id="cart-items" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-3"></div>
+    <!-- ═══════════ TOP NAV ═══════════ -->
+    <header
+      class="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b border-orange-100 h-16"
+    >
+      <div
+        class="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-3"
+      >
+        <a
+          href="index.html"
+          class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0"
+        >
+          Amber <em class="text-orange-500 not-italic">Kitchen</em>
+        </a>
+        <nav class="hidden lg:flex items-center gap-6 xl:gap-8">
+          <a
+            href="index.html"
+            class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition"
+            >Home</a
+          >
+          <a
+            href="menu.html"
+            class="text-xs font-semibold tracking-widest uppercase text-orange-500 border-b-2 border-orange-400
+             "
+            >Menu</a
+          >
+          <a
+            href="about.html"
+            class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition"
+            >Our Story</a
+          >
+          <a
+            href="reserve.html"
+            class="text-xs font-semibold tracking-widest uppercase text-stone-400 pb-0.5 hover:text-orange-500 transition"
+            >Reserve</a
+          >
+        </nav>
+        <div class="flex items-center gap-2">
+          <button
+            onclick="openCart()"
+            class="relative flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 sm:px-4 py-2 rounded-xl transition"
+          >
+            <svg
+              class="w-4 h-4 text-orange-500 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+              />
+            </svg>
+            <span class="hidden sm:block text-xs font-semibold text-orange-600"
+              >Cart</span
+            >
+            <span
+              id="nav-badge"
+              class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none"
+              >0</span
+            >
+          </button>
+          <!-- Hamburger for mobile/tablet -->
+          <button
+            onclick="toggleMenu()"
+            class="lg:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-xl border border-borderSoft hover:border-orangePrimary transition"
+          >
+            <span class="w-4 h-0.5 bg-textDark rounded"></span>
+            <span class="w-4 h-0.5 bg-textDark rounded"></span>
+            <span
+              class="w-3 h-0.5 bg-textDark rounded self-start ml-0.5"
+            ></span>
+          </button>
+          <a
+            href="reserve.html"
+            class="hidden sm:block bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm transition whitespace-nowrap"
+          >
+            Order Now
+          </a>
+        </div>
+      </div>
+    </header>
 
-  <div id="cart-footer" class="hidden border-t border-orange-100 px-5 py-5 space-y-4">
-    <div class="flex items-center justify-between text-sm text-stone-400">
-      <span>Subtotal</span>
-      <span id="cart-subtotal" class="font-semibold text-stone-700">$0.00</span>
-    </div>
-    <div class="flex items-center justify-between text-sm text-stone-400">
-      <span>Tax (10%)</span>
-      <span id="cart-tax" class="font-semibold text-stone-700">$0.00</span>
-    </div>
-    <div class="flex items-center justify-between border-t border-orange-100 pt-4">
-      <span class="font-bold text-stone-900">Total</span>
-      <span id="cart-total" class="font-serif text-2xl font-bold text-orange-500">$0.00</span>
-    </div>
-    <button onclick="handleCheckout()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-4 rounded-xl">
-      Checkout →
-    </button>
-    <button onclick="clearCart()" class="w-full border border-stone-200 hover:border-red-300 hover:text-red-500 text-stone-400 text-xs font-semibold py-2.5 rounded-xl">
-      Clear Cart
-    </button>
-  </div>
-</aside>
-
-
-<!-- ============================================================
-     TOP NAV
-============================================================ -->
-<header class="fixed top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-b border-orange-100 h-16">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-
-    <a href="/index.html" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0">
-      Amber <em class="text-orange-500 not-italic">Kitchen</em>
-    </a>
-
-    <nav class="hidden lg:flex items-center gap-8">
-      <a href="index.html"    class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Home</a>
-      <a href="menu.html"    class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Menu</a>
-      <a href="#"   class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Our Story</a>
-      <a href="reserve.html" class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500">Reserve</a>
-    </nav>
-
-    <div class="flex items-center gap-2 sm:gap-3">
-      <!-- Cart Button (Desktop) -->
-      <button onclick="openCart()" class="relative flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 sm:px-4 py-2 rounded-xl">
-        <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
-        </svg>
-        <span class="hidden sm:block text-xs font-semibold text-orange-600">Cart</span>
-        <span id="nav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full items-center justify-center">0</span>
-      </button>
-      <button class="hidden sm:block bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm">
-        Order Now
-      </button>
-    </div>
-  </div>
-</header>
-
-
-<!-- ============================================================
+    <!-- ============================================================
      PAGE HEADER BANNER
 ============================================================ -->
-<section class="pt-16 bg-white border-b border-orange-100">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2">✦ Full Menu</p>
-        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-stone-900 leading-tight">
-          Every <em class="text-orange-500">Dish</em> We Craft
-        </h1>
-        <p class="text-stone-400 text-sm mt-3 max-w-md leading-relaxed font-light">
-          From light starters to indulgent desserts — explore our complete seasonal menu, crafted with locally sourced ingredients.
-        </p>
+    <section class="pt-16 bg-white border-b border-orange-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div
+          class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
+        >
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2"
+            >
+              ✦ Full Menu
+            </p>
+            <h1
+              class="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-stone-900 leading-tight"
+            >
+              Every <em class="text-orange-500">Dish</em> We Craft
+            </h1>
+            <p
+              class="text-stone-400 text-sm mt-3 max-w-md leading-relaxed font-light"
+            >
+              From light starters to indulgent desserts — explore our complete
+              seasonal menu, crafted with locally sourced ingredients.
+            </p>
+          </div>
+          <!-- Search Bar -->
+          <div class="relative w-full sm:w-72 shrink-0">
+            <svg
+              class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              id="search-input"
+              oninput="handleSearch(this.value)"
+              type="text"
+              placeholder="Search dishes..."
+              class="w-full pl-10 pr-4 py-3 bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl text-sm text-stone-700 placeholder-stone-300"
+            />
+          </div>
+        </div>
       </div>
-      <!-- Search Bar -->
-      <div class="relative w-full sm:w-72 shrink-0">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          id="search-input"
-          oninput="handleSearch(this.value)"
-          type="text"
-          placeholder="Search dishes..."
-          class="w-full pl-10 pr-4 py-3 bg-orange-50 border border-orange-100 focus:border-orange-400 focus:outline-none rounded-xl text-sm text-stone-700 placeholder-stone-300"
-        />
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-
-<!-- ============================================================
+    <!-- ============================================================
      STICKY CATEGORY NAV
 ============================================================ -->
-<div class="sticky top-16 z-20 bg-white/95 backdrop-blur-md border-b border-orange-100">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6">
-    <div class="flex gap-1 sm:gap-2 overflow-x-auto py-3" style="scrollbar-width:none">
-      <button onclick="filterCat('all', this)"       class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold bg-orange-500 text-white border border-orange-500 whitespace-nowrap">All</button>
-      <button onclick="filterCat('starters', this)"  class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🥗 Starters</button>
-      <button onclick="filterCat('soups', this)"     class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🍲 Soups</button>
-      <button onclick="filterCat('pasta', this)"     class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🍝 Pasta</button>
-      <button onclick="filterCat('main', this)"      class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🥩 Mains</button>
-      <button onclick="filterCat('pizza', this)"     class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🍕 Pizza</button>
-      <button onclick="filterCat('seafood', this)"   class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🦞 Seafood</button>
-      <button onclick="filterCat('desserts', this)"  class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🍮 Desserts</button>
-      <button onclick="filterCat('drinks', this)"    class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap">🍹 Drinks</button>
+    <div
+      class="sticky top-16 z-20 bg-white/95 backdrop-blur-md border-b border-orange-100"
+    >
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div
+          class="flex gap-1 sm:gap-2 overflow-x-auto py-3"
+          style="scrollbar-width: none"
+        >
+          <button
+            onclick="filterCat('all', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold bg-orange-500 text-white border border-orange-500 whitespace-nowrap"
+          >
+            All
+          </button>
+          <button
+            onclick="filterCat('starters', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🥗 Starters
+          </button>
+          <button
+            onclick="filterCat('soups', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🍲 Soups
+          </button>
+          <button
+            onclick="filterCat('pasta', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🍝 Pasta
+          </button>
+          <button
+            onclick="filterCat('main', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🥩 Mains
+          </button>
+          <button
+            onclick="filterCat('pizza', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🍕 Pizza
+          </button>
+          <button
+            onclick="filterCat('seafood', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🦞 Seafood
+          </button>
+          <button
+            onclick="filterCat('desserts', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🍮 Desserts
+          </button>
+          <button
+            onclick="filterCat('drinks', this)"
+            class="cat-btn shrink-0 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold border border-stone-200 text-stone-500 bg-white whitespace-nowrap"
+          >
+            🍹 Drinks
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-
-<!-- ============================================================
+    <!-- ============================================================
      MENU CONTENT
 ============================================================ -->
-<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-
-  <!-- No results message -->
-  <div id="no-results" class="hidden text-center py-20">
-    <p class="font-serif text-3xl text-stone-300 italic mb-2">No dishes found</p>
-    <p class="text-sm text-stone-400">Try searching with a different keyword</p>
-  </div>
-
-  <!-- ── STARTERS ───────────────────────────────── -->
-  <div id="section-starters" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🥗</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ To Begin</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Starters</h2>
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <!-- No results message -->
+      <div id="no-results" class="hidden text-center py-20">
+        <p class="font-serif text-3xl text-stone-300 italic mb-2">
+          No dishes found
+        </p>
+        <p class="text-sm text-stone-400">
+          Try searching with a different keyword
+        </p>
       </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" id="grid-starters">
 
-      <div class="dish-card" data-cat="starters" data-name="bruschetta trio">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=300&q=80" alt="Bruschetta" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5 flex-wrap">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Vegan</span>
+      <!-- ── STARTERS ───────────────────────────────── -->
+      <div id="section-starters" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🥗
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ To Begin
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Starters
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+          id="grid-starters"
+        >
+          <div
+            class="dish-card"
+            data-cat="starters"
+            data-name="bruschetta trio"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=300&q=80"
+                alt="Bruschetta"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5 flex-wrap">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Vegan</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Bruschetta Trio
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Tomato, olive tapenade & roasted pepper on toasted
+                    sourdough.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$10.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'bruschetta',
+                        'Bruschetta Trio',
+                        10,
+                        'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Bruschetta Trio</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Tomato, olive tapenade & roasted pepper on toasted sourdough.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$10.00</span>
-              <button onclick="addToCart('bruschetta','Bruschetta Trio',10,'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div
+            class="dish-card"
+            data-cat="starters"
+            data-name="amber garden bowl"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80"
+                alt="Garden Bowl"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5 flex-wrap">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Vegan</span
+                    >
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Healthy</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Amber Garden Bowl
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Quinoa, avocado, roasted beets, lemon-tahini dressing.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$14.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'garden-bowl',
+                        'Amber Garden Bowl',
+                        14,
+                        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="dish-card"
+            data-cat="starters"
+            data-name="burrata & prosciutto"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=300&q=80"
+                alt="Burrata"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded"
+                      >Bestseller</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Burrata & Prosciutto
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Creamy burrata, aged prosciutto, fig jam and balsamic glaze.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$17.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'burrata',
+                        'Burrata & Prosciutto',
+                        17,
+                        'https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="dish-card" data-cat="starters" data-name="amber garden bowl">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" alt="Garden Bowl" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5 flex-wrap">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Vegan</span>
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Healthy</span>
+      <!-- ── SOUPS ───────────────────────────────────── -->
+      <div id="section-soups" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🍲
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Warm & Comforting
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Soups
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div
+            class="dish-card"
+            data-cat="soups"
+            data-name="roasted tomato bisque"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=300&q=80"
+                alt="Tomato Bisque"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Vegan</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Roasted Tomato Bisque
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Slow-roasted heirloom tomatoes with fresh basil and crusty
+                    bread.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$9.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'tomato-bisque',
+                        'Roasted Tomato Bisque',
+                        9,
+                        'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Amber Garden Bowl</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Quinoa, avocado, roasted beets, lemon-tahini dressing.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$14.00</span>
-              <button onclick="addToCart('garden-bowl','Amber Garden Bowl',14,'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div class="dish-card" data-cat="soups" data-name="french onion soup">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1605209971703-082b24c05f76?auto=format&fit=crop&w=300&q=80"
+                alt="French Onion"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Classic</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    French Onion Soup
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Caramelised onions, rich beef broth, gruyère crouton
+                    topping.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$12.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'french-onion',
+                        'French Onion Soup',
+                        12,
+                        'https://images.unsplash.com/photo-1605209971703-082b24c05f76?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="dish-card" data-cat="starters" data-name="burrata & prosciutto">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=300&q=80" alt="Burrata" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bestseller</span>
+      <!-- ── PASTA ────────────────────────────────────── -->
+      <div id="section-pasta" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🍝
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Handmade Daily
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Pasta
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div
+            class="dish-card"
+            data-cat="pasta"
+            data-name="creamy truffle pasta"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=300&q=80"
+                alt="Truffle Pasta"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5 flex-wrap">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Chef's Special</span
+                    >
+                    <span
+                      class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded"
+                      >Bestseller</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Creamy Truffle Pasta
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Handmade pappardelle, black truffle oil, 24-month aged
+                    parmesan.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$22.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'truffle-pasta',
+                        'Creamy Truffle Pasta',
+                        22,
+                        'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Burrata & Prosciutto</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Creamy burrata, aged prosciutto, fig jam and balsamic glaze.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$17.00</span>
-              <button onclick="addToCart('burrata','Burrata & Prosciutto',17,'https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div class="dish-card" data-cat="pasta" data-name="classic carbonara">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=300&q=80"
+                alt="Carbonara"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Classic</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Classic Carbonara
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Spaghetti, guanciale, egg yolk, pecorino romano, black
+                    pepper.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$19.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'carbonara',
+                        'Classic Carbonara',
+                        19,
+                        'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dish-card" data-cat="pasta" data-name="lobster linguine">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=300&q=80"
+                alt="Lobster Linguine"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded"
+                      >Premium</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Lobster Linguine
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Fresh Maine lobster, cherry tomatoes, white wine, chilli
+                    flakes.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$38.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'lobster-linguine',
+                        'Lobster Linguine',
+                        38,
+                        'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ── SOUPS ───────────────────────────────────── -->
-  <div id="section-soups" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🍲</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Warm & Comforting</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Soups</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="soups" data-name="roasted tomato bisque">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=300&q=80" alt="Tomato Bisque" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Vegan</span>
+      <!-- ── MAIN COURSE ──────────────────────────────── -->
+      <div id="section-main" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🥩
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ The Heart of the Meal
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Main Course
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div class="dish-card" data-cat="main" data-name="grilled ribeye">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80"
+                alt="Ribeye"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5 flex-wrap">
+                    <span
+                      class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded"
+                      >Premium</span
+                    >
+                    <span
+                      class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded"
+                      >Bestseller</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Grilled Ribeye
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Prime dry-aged ribeye, rosemary butter, truffle fries,
+                    chimichurri.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$44.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'ribeye',
+                        'Grilled Ribeye',
+                        44,
+                        'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Roasted Tomato Bisque</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Slow-roasted heirloom tomatoes with fresh basil and crusty bread.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$9.00</span>
-              <button onclick="addToCart('tomato-bisque','Roasted Tomato Bisque',9,'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div class="dish-card" data-cat="main" data-name="duck confit">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1562802378-063ec186a863?auto=format&fit=crop&w=300&q=80"
+                alt="Duck Confit"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Chef's Special</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Duck Confit
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Slow-cooked leg, cherry jus, sautéed greens, dauphinoise
+                    potato.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$36.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'duck-confit',
+                        'Duck Confit',
+                        36,
+                        'https://images.unsplash.com/photo-1562802378-063ec186a863?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="dish-card"
+            data-cat="main"
+            data-name="mushroom wellington"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1534482421-64566f976cfa?auto=format&fit=crop&w=300&q=80"
+                alt="Wellington"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Vegetarian</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Mushroom Wellington
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Mixed wild mushrooms, spinach, duxelles in golden puff
+                    pastry.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$28.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'mushroom-wellington',
+                        'Mushroom Wellington',
+                        28,
+                        'https://images.unsplash.com/photo-1534482421-64566f976cfa?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="dish-card" data-cat="soups" data-name="french onion soup">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1605209971703-082b24c05f76?auto=format&fit=crop&w=300&q=80" alt="French Onion" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Classic</span>
+      <!-- ── PIZZA ─────────────────────────────────────── -->
+      <div id="section-pizza" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🍕
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Stone-Fired
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Pizza
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div
+            class="dish-card"
+            data-cat="pizza"
+            data-name="signature pepperoni"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=300&q=80"
+                alt="Pepperoni"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Popular</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Signature Pepperoni
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Stone-fired crust, San Marzano tomatoes, fior di latte
+                    mozzarella.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$18.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'pepperoni',
+                        'Signature Pepperoni',
+                        18,
+                        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">French Onion Soup</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Caramelised onions, rich beef broth, gruyère crouton topping.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$12.00</span>
-              <button onclick="addToCart('french-onion','French Onion Soup',12,'https://images.unsplash.com/photo-1605209971703-082b24c05f76?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div
+            class="dish-card"
+            data-cat="pizza"
+            data-name="four cheese white pizza"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=300&q=80"
+                alt="Four Cheese"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Vegetarian</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Four Cheese White
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Mozzarella, gorgonzola, taleggio, parmigiano, fresh truffle.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$21.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'four-cheese',
+                        'Four Cheese White Pizza',
+                        21,
+                        'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ── PASTA ────────────────────────────────────── -->
-  <div id="section-pasta" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🍝</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Handmade Daily</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Pasta</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="pasta" data-name="creamy truffle pasta">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=300&q=80" alt="Truffle Pasta" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5 flex-wrap">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Chef's Special</span>
-                <span class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bestseller</span>
+      <!-- ── SEAFOOD ────────────────────────────────────── -->
+      <div id="section-seafood" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🦞
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Ocean Fresh
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Seafood
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div class="dish-card" data-cat="seafood" data-name="seared salmon">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=300&q=80"
+                alt="Salmon"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Popular</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Seared Salmon
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Atlantic salmon, dill cream sauce, pickled cucumber, capers.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$28.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'salmon',
+                        'Seared Salmon',
+                        28,
+                        'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Creamy Truffle Pasta</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Handmade pappardelle, black truffle oil, 24-month aged parmesan.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$22.00</span>
-              <button onclick="addToCart('truffle-pasta','Creamy Truffle Pasta',22,'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div
+            class="dish-card"
+            data-cat="seafood"
+            data-name="grilled tiger prawns"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=300&q=80"
+                alt="Prawns"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded"
+                      >Premium</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Grilled Tiger Prawns
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Garlic butter, lemon zest, fresh herbs, charred lemon
+                    halves.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$32.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'tiger-prawns',
+                        'Grilled Tiger Prawns',
+                        32,
+                        'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dish-card" data-cat="seafood" data-name="seared scallops">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=300&q=80"
+                alt="Scallops"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Chef's Special</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Seared Scallops
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Pan-seared king scallops, cauliflower purée, crispy
+                    pancetta.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$34.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'scallops',
+                        'Seared Scallops',
+                        34,
+                        'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="dish-card" data-cat="pasta" data-name="classic carbonara">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=300&q=80" alt="Carbonara" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Classic</span>
+      <!-- ── DESSERTS ───────────────────────────────────── -->
+      <div id="section-desserts" class="menu-section mb-12 sm:mb-16">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🍮
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Sweet Endings
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Desserts
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div
+            class="dish-card"
+            data-cat="desserts"
+            data-name="chocolate lava cake"
+          >
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=300&q=80"
+                alt="Chocolate Lava"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded"
+                      >Bestseller</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Chocolate Lava Cake
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Warm dark chocolate, salted caramel, vanilla bean ice cream.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$12.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'choc-lava',
+                        'Chocolate Lava Cake',
+                        12,
+                        'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Classic Carbonara</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Spaghetti, guanciale, egg yolk, pecorino romano, black pepper.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$19.00</span>
-              <button onclick="addToCart('carbonara','Classic Carbonara',19,'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div class="dish-card" data-cat="desserts" data-name="crème brûlée">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?auto=format&fit=crop&w=300&q=80"
+                alt="Creme Brulee"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Classic</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Crème Brûlée
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Vanilla custard with caramelised sugar crust, fresh berries.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$11.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'creme-brulee',
+                        'Crème Brûlée',
+                        11,
+                        'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dish-card" data-cat="desserts" data-name="tiramisu">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=300&q=80"
+                alt="Tiramisu"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Classic</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Tiramisu
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Mascarpone, espresso-soaked ladyfingers, cocoa dusting.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$13.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'tiramisu',
+                        'Tiramisu',
+                        13,
+                        'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="dish-card" data-cat="pasta" data-name="lobster linguine">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=300&q=80" alt="Lobster Linguine" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Premium</span>
+      <!-- ── DRINKS ─────────────────────────────────────── -->
+      <div id="section-drinks" class="menu-section mb-8">
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0"
+          >
+            🍹
+          </div>
+          <div>
+            <p
+              class="text-xs font-bold tracking-widest uppercase text-orange-500"
+            >
+              ✦ Raise a Glass
+            </p>
+            <h2
+              class="font-serif text-2xl sm:text-3xl font-light text-stone-900"
+            >
+              Drinks
+            </h2>
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+        >
+          <div class="dish-card" data-cat="drinks" data-name="amber cocktail">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=300&q=80"
+                alt="Cocktail"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded"
+                      >Signature</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Amber Cocktail
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Citrus blend, muddled rosemary, elderflower tonic, orange
+                    peel.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$16.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'cocktail',
+                        'Amber Cocktail',
+                        16,
+                        'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
               </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Lobster Linguine</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Fresh Maine lobster, cherry tomatoes, white wine, chilli flakes.</p>
             </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$38.00</span>
-              <button onclick="addToCart('lobster-linguine','Lobster Linguine',38,'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
+          </div>
+
+          <div class="dish-card" data-cat="drinks" data-name="fresh lemonade">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=300&q=80"
+                alt="Lemonade"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+                      >Non-Alcoholic</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Fresh Lemonade
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Hand-squeezed lemons, honey syrup, sparkling water and mint.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$7.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'lemonade',
+                        'Fresh Lemonade',
+                        7,
+                        'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dish-card" data-cat="drinks" data-name="espresso martini">
+            <div
+              class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=300&q=80"
+                alt="Espresso Martini"
+                class="w-24 sm:w-28 h-full object-cover shrink-0"
+              />
+              <div
+                class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0"
+              >
+                <div>
+                  <div class="flex gap-1.5 mb-1.5">
+                    <span
+                      class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded"
+                      >Bestseller</span
+                    >
+                  </div>
+                  <h3
+                    class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1"
+                  >
+                    Espresso Martini
+                  </h3>
+                  <p class="text-xs text-stone-400 leading-relaxed">
+                    Double espresso, vodka, Kahlúa, sugar syrup, coffee beans.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="font-serif text-lg font-bold text-orange-500"
+                    >$18.00</span
+                  >
+                  <button
+                    onclick="
+                      addToCart(
+                        'espresso-martini',
+                        'Espresso Martini',
+                        18,
+                        'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=120&q=80',
+                      )
+                    "
+                    class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </main>
 
-    </div>
-  </div>
-
-  <!-- ── MAIN COURSE ──────────────────────────────── -->
-  <div id="section-main" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🥩</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ The Heart of the Meal</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Main Course</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="main" data-name="grilled ribeye">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80" alt="Ribeye" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5 flex-wrap">
-                <span class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Premium</span>
-                <span class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bestseller</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Grilled Ribeye</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Prime dry-aged ribeye, rosemary butter, truffle fries, chimichurri.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$44.00</span>
-              <button onclick="addToCart('ribeye','Grilled Ribeye',44,'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="main" data-name="duck confit">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1562802378-063ec186a863?auto=format&fit=crop&w=300&q=80" alt="Duck Confit" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Chef's Special</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Duck Confit</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Slow-cooked leg, cherry jus, sautéed greens, dauphinoise potato.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$36.00</span>
-              <button onclick="addToCart('duck-confit','Duck Confit',36,'https://images.unsplash.com/photo-1562802378-063ec186a863?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="main" data-name="mushroom wellington">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1534482421-64566f976cfa?auto=format&fit=crop&w=300&q=80" alt="Wellington" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Vegetarian</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Mushroom Wellington</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Mixed wild mushrooms, spinach, duxelles in golden puff pastry.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$28.00</span>
-              <button onclick="addToCart('mushroom-wellington','Mushroom Wellington',28,'https://images.unsplash.com/photo-1534482421-64566f976cfa?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── PIZZA ─────────────────────────────────────── -->
-  <div id="section-pizza" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🍕</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Stone-Fired</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Pizza</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="pizza" data-name="signature pepperoni">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=300&q=80" alt="Pepperoni" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Popular</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Signature Pepperoni</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Stone-fired crust, San Marzano tomatoes, fior di latte mozzarella.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$18.00</span>
-              <button onclick="addToCart('pepperoni','Signature Pepperoni',18,'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="pizza" data-name="four cheese white pizza">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=300&q=80" alt="Four Cheese" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Vegetarian</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Four Cheese White</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Mozzarella, gorgonzola, taleggio, parmigiano, fresh truffle.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$21.00</span>
-              <button onclick="addToCart('four-cheese','Four Cheese White Pizza',21,'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── SEAFOOD ────────────────────────────────────── -->
-  <div id="section-seafood" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🦞</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Ocean Fresh</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Seafood</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="seafood" data-name="seared salmon">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=300&q=80" alt="Salmon" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Popular</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Seared Salmon</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Atlantic salmon, dill cream sauce, pickled cucumber, capers.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$28.00</span>
-              <button onclick="addToCart('salmon','Seared Salmon',28,'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="seafood" data-name="grilled tiger prawns">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=300&q=80" alt="Prawns" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Premium</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Grilled Tiger Prawns</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Garlic butter, lemon zest, fresh herbs, charred lemon halves.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$32.00</span>
-              <button onclick="addToCart('tiger-prawns','Grilled Tiger Prawns',32,'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="seafood" data-name="seared scallops">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=300&q=80" alt="Scallops" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Chef's Special</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Seared Scallops</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Pan-seared king scallops, cauliflower purée, crispy pancetta.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$34.00</span>
-              <button onclick="addToCart('scallops','Seared Scallops',34,'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── DESSERTS ───────────────────────────────────── -->
-  <div id="section-desserts" class="menu-section mb-12 sm:mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🍮</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Sweet Endings</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Desserts</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="desserts" data-name="chocolate lava cake">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=300&q=80" alt="Chocolate Lava" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bestseller</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Chocolate Lava Cake</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Warm dark chocolate, salted caramel, vanilla bean ice cream.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$12.00</span>
-              <button onclick="addToCart('choc-lava','Chocolate Lava Cake',12,'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="desserts" data-name="crème brûlée">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?auto=format&fit=crop&w=300&q=80" alt="Creme Brulee" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Classic</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Crème Brûlée</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Vanilla custard with caramelised sugar crust, fresh berries.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$11.00</span>
-              <button onclick="addToCart('creme-brulee','Crème Brûlée',11,'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="desserts" data-name="tiramisu">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=300&q=80" alt="Tiramisu" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Classic</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Tiramisu</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Mascarpone, espresso-soaked ladyfingers, cocoa dusting.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$13.00</span>
-              <button onclick="addToCart('tiramisu','Tiramisu',13,'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── DRINKS ─────────────────────────────────────── -->
-  <div id="section-drinks" class="menu-section mb-8">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl shrink-0">🍹</div>
-      <div>
-        <p class="text-xs font-bold tracking-widest uppercase text-orange-500">✦ Raise a Glass</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-light text-stone-900">Drinks</h2>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-
-      <div class="dish-card" data-cat="drinks" data-name="amber cocktail">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=300&q=80" alt="Cocktail" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Signature</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Amber Cocktail</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Citrus blend, muddled rosemary, elderflower tonic, orange peel.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$16.00</span>
-              <button onclick="addToCart('cocktail','Amber Cocktail',16,'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="drinks" data-name="fresh lemonade">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=300&q=80" alt="Lemonade" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded">Non-Alcoholic</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Fresh Lemonade</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Hand-squeezed lemons, honey syrup, sparkling water and mint.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$7.00</span>
-              <button onclick="addToCart('lemonade','Fresh Lemonade',7,'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dish-card" data-cat="drinks" data-name="espresso martini">
-        <div class="bg-white border border-orange-100 rounded-2xl overflow-hidden flex hover:border-orange-300 hover:shadow-md cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=300&q=80" alt="Espresso Martini" class="w-24 sm:w-28 h-full object-cover shrink-0">
-          <div class="p-3 sm:p-4 flex flex-col justify-between flex-1 min-w-0">
-            <div>
-              <div class="flex gap-1.5 mb-1.5">
-                <span class="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Bestseller</span>
-              </div>
-              <h3 class="font-serif text-base sm:text-lg font-semibold text-stone-900 leading-tight mb-1">Espresso Martini</h3>
-              <p class="text-xs text-stone-400 leading-relaxed">Double espresso, vodka, Kahlúa, sugar syrup, coffee beans.</p>
-            </div>
-            <div class="flex items-center justify-between mt-2">
-              <span class="font-serif text-lg font-bold text-orange-500">$18.00</span>
-              <button onclick="addToCart('espresso-martini','Espresso Martini',18,'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=120&q=80')"
-                class="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow shrink-0">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-</main>
-
-
-<!-- ============================================================
+    <!-- ============================================================
      FOOTER
 ============================================================ -->
-<footer class="bg-white border-t border-orange-100 py-10 sm:py-14">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6">
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-      <div class="sm:col-span-2 lg:col-span-2">
-        <p class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mb-3">
-          Amber <em class="text-orange-500 not-italic">Kitchen</em>
-        </p>
-        <p class="text-sm text-stone-400 leading-relaxed max-w-xs">The finest dining experience in the heart of the city. Crafted for the love of food and the joy of sharing.</p>
+    <footer class="bg-white border-t border-orange-100 py-10 sm:py-14">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+          <div class="sm:col-span-2 lg:col-span-2">
+            <p
+              class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mb-3"
+            >
+              Amber <em class="text-orange-500 not-italic">Kitchen</em>
+            </p>
+            <p class="text-sm text-stone-400 leading-relaxed max-w-xs">
+              The finest dining experience in the heart of the city. Crafted for
+              the love of food and the joy of sharing.
+            </p>
+          </div>
+          <div>
+            <h5
+              class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4"
+            >
+              Explore
+            </h5>
+            <ul class="space-y-2.5 text-sm text-stone-400">
+              <li>
+                <a href="amber-kitchen.html" class="hover:text-orange-500"
+                  >Home</a
+                >
+              </li>
+              <li>
+                <a href="menu.html" class="hover:text-orange-500">Full Menu</a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-orange-500">Private Dining</a>
+              </li>
+              <li><a href="#" class="hover:text-orange-500">Events</a></li>
+            </ul>
+          </div>
+          <div>
+            <h5
+              class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4"
+            >
+              Find Us
+            </h5>
+            <p class="text-sm text-stone-400 leading-relaxed">
+              123 Culinary Ave<br />Foodie District, NY<br /><br />
+              +1 (555) 000-1234<br />hello@amberkitchen.com<br /><br />
+              Mon–Sun: 10AM – 11PM
+            </p>
+          </div>
+        </div>
+        <div
+          class="border-t border-orange-50 pt-6 text-center text-xs text-stone-300"
+        >
+          © 2026 Amber Kitchen. Handcrafted for food lovers.
+        </div>
       </div>
-      <div>
-        <h5 class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4">Explore</h5>
-        <ul class="space-y-2.5 text-sm text-stone-400">
-          <li><a href="amber-kitchen.html" class="hover:text-orange-500">Home</a></li>
-          <li><a href="menu.html" class="hover:text-orange-500">Full Menu</a></li>
-          <li><a href="#" class="hover:text-orange-500">Private Dining</a></li>
-          <li><a href="#" class="hover:text-orange-500">Events</a></li>
-        </ul>
-      </div>
-      <div>
-        <h5 class="text-xs font-bold tracking-widest uppercase text-orange-500 mb-4">Find Us</h5>
-        <p class="text-sm text-stone-400 leading-relaxed">
-          123 Culinary Ave<br>Foodie District, NY<br><br>
-          +1 (555) 000-1234<br>hello@amberkitchen.com<br><br>
-          Mon–Sun: 10AM – 11PM
-        </p>
-      </div>
-    </div>
-    <div class="border-t border-orange-50 pt-6 text-center text-xs text-stone-300">
-      © 2026 Amber Kitchen. Handcrafted for food lovers.
-    </div>
-  </div>
-</footer>
+    </footer>
 
-
-<!-- ============================================================
+    <!-- ============================================================
      MOBILE BOTTOM NAV
 ============================================================ -->
-<nav class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white/95 backdrop-blur-md border-t border-orange-100 flex items-center justify-around h-20 px-2">
+    <nav
+      class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white/95 backdrop-blur-md border-t border-orange-100 flex items-center justify-around h-20 px-2"
+    >
+      <a
+        href="amber-kitchen.html"
+        class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+        <span class="text-xs font-semibold">Home</span>
+      </a>
 
-  <a href="amber-kitchen.html" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
-    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    <span class="text-xs font-semibold">Home</span>
-  </a>
+      <a
+        href="menu.html"
+        class="flex flex-col items-center gap-1 px-3 py-2 text-orange-500"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+          />
+        </svg>
+        <span class="text-xs font-semibold">Menu</span>
+      </a>
 
-  <a href="menu.html" class="flex flex-col items-center gap-1 px-3 py-2 text-orange-500">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-    </svg>
-    <span class="text-xs font-semibold">Menu</span>
-  </a>
+      <button
+        onclick="openCart()"
+        class="flex flex-col items-center gap-1 relative"
+      >
+        <div
+          class="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg -mt-7 border-4 border-white relative"
+        >
+          <svg
+            class="w-6 h-6 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+          <span
+            id="mob-badge"
+            class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full items-center justify-center"
+            >0</span
+          >
+        </div>
+        <span class="text-xs font-semibold text-stone-400 mt-0.5">Cart</span>
+      </button>
 
-  <button onclick="openCart()" class="flex flex-col items-center gap-1 relative">
-    <div class="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg -mt-7 border-4 border-white relative">
-      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
-      </svg>
-      <span id="mob-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full items-center justify-center">0</span>
-    </div>
-    <span class="text-xs font-semibold text-stone-400 mt-0.5">Cart</span>
-  </button>
+      <a
+        href="#"
+        class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <span class="text-xs font-semibold">Reserve</span>
+      </a>
 
-  <a href="#" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <rect x="3" y="4" width="18" height="18" rx="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-    <span class="text-xs font-semibold">Reserve</span>
-  </a>
+      <a
+        href="#"
+        class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        <span class="text-xs font-semibold">Profile</span>
+      </a>
+    </nav>
 
-  <a href="#" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-    </svg>
-    <span class="text-xs font-semibold">Profile</span>
-  </a>
-
-</nav>
-
-
-<!-- ============================================================
+    <!-- ============================================================
      JAVASCRIPT
 ============================================================ -->
-<script>
-  /* ── CART STATE ── */
-  let cart = [];
+    <script>
+      let cart = [];
 
-  /* ── OPEN / CLOSE ── */
-  function openCart() {
-    document.getElementById('cart-drawer').style.transform = 'translateX(0)';
-    document.getElementById('cart-overlay').classList.remove('hidden');
-  }
-  function closeCart() {
-    document.getElementById('cart-drawer').style.transform = 'translateX(100%)';
-    document.getElementById('cart-overlay').classList.add('hidden');
-  }
-
-  /* ── ADD TO CART ── */
-  function addToCart(id, name, price, img) {
-    const existing = cart.find(i => i.id === id);
-    if (existing) {
-      existing.qty++;
-    } else {
-      cart.push({ id, name, price, img, qty: 1 });
-    }
-    renderCart();
-    updateBadges();
-    openCart();
-  }
-
-  /* ── CHANGE QTY ── */
-  function changeQty(id, delta) {
-    const item = cart.find(i => i.id === id);
-    if (!item) return;
-    item.qty += delta;
-    if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-    renderCart();
-    updateBadges();
-  }
-
-  /* ── REMOVE ITEM ── */
-  function removeItem(id) {
-    cart = cart.filter(i => i.id !== id);
-    renderCart();
-    updateBadges();
-  }
-
-  /* ── CLEAR CART ── */
-  function clearCart() {
-    cart = [];
-    renderCart();
-    updateBadges();
-  }
-
-  /* ── RENDER CART ── */
-  function renderCart() {
-    const itemsEl  = document.getElementById('cart-items');
-    const emptyEl  = document.getElementById('cart-empty');
-    const footerEl = document.getElementById('cart-footer');
-
-    if (cart.length === 0) {
-      emptyEl.classList.remove('hidden');
-      itemsEl.classList.add('hidden');
-      footerEl.classList.add('hidden');
-      return;
-    }
-
-    emptyEl.classList.add('hidden');
-    itemsEl.classList.remove('hidden');
-    footerEl.classList.remove('hidden');
-
-    let html = '';
-    cart.forEach(item => {
-      html += `
-        <div class="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl p-3">
-          <img src="${item.img}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-orange-200">
-          <div class="flex-1 min-w-0">
-            <p class="font-serif text-base font-semibold text-stone-900 leading-tight truncate">${item.name}</p>
-            <p class="text-xs text-stone-400 mt-0.5">$${item.price.toFixed(2)} each</p>
-          </div>
-          <div class="flex flex-col items-end gap-2 shrink-0">
-            <button onclick="removeItem('${item.id}')" class="text-stone-300 hover:text-red-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            <div class="flex items-center gap-2">
-              <button onclick="changeQty('${item.id}',-1)" class="w-6 h-6 rounded-lg bg-white border border-stone-200 hover:border-orange-400 text-stone-600 flex items-center justify-center text-sm font-bold">−</button>
-              <span class="text-sm font-bold text-stone-800 w-4 text-center">${item.qty}</span>
-              <button onclick="changeQty('${item.id}',1)" class="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center text-sm font-bold">+</button>
-            </div>
-            <p class="text-sm font-bold text-orange-500">$${(item.price * item.qty).toFixed(2)}</p>
-          </div>
-        </div>`;
-    });
-    itemsEl.innerHTML = html;
-
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const tax      = subtotal * 0.1;
-    const total    = subtotal + tax;
-    document.getElementById('cart-subtotal').textContent      = `$${subtotal.toFixed(2)}`;
-    document.getElementById('cart-tax').textContent           = `$${tax.toFixed(2)}`;
-    document.getElementById('cart-total').textContent         = `$${total.toFixed(2)}`;
-    document.getElementById('cart-header-count').textContent  = cart.reduce((s, i) => s + i.qty, 0);
-  }
-
-  /* ── UPDATE BADGES ── */
-  function updateBadges() {
-    const total = cart.reduce((s, i) => s + i.qty, 0);
-    ['nav-badge', 'mob-badge'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (total > 0) { el.textContent = total; el.classList.remove('hidden'); el.classList.add('flex'); }
-      else           { el.classList.add('hidden'); el.classList.remove('flex'); }
-    });
-  }
-
-  /* ── CHECKOUT ── */
-  function handleCheckout() {
-    const btn = document.querySelector('#cart-footer button:first-child');
-    btn.textContent = '✓ Order Placed!';
-    btn.classList.replace('bg-orange-500', 'bg-green-500');
-    btn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600');
-    setTimeout(() => {
-      cart = []; renderCart(); updateBadges(); closeCart();
-      btn.textContent = 'Checkout →';
-      btn.classList.replace('bg-green-500', 'bg-orange-500');
-      btn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600');
-    }, 1800);
-  }
-
-  /* ── CATEGORY FILTER ── */
-  function filterCat(cat, el) {
-    // Update pill styles
-    document.querySelectorAll('.cat-btn').forEach(b => {
-      b.classList.remove('bg-orange-500', 'text-white', 'border-orange-500');
-      b.classList.add('bg-white', 'text-stone-500', 'border-stone-200');
-    });
-    el.classList.add('bg-orange-500', 'text-white', 'border-orange-500');
-    el.classList.remove('bg-white', 'text-stone-500', 'border-stone-200');
-
-    // Show/hide sections
-    document.querySelectorAll('.menu-section').forEach(sec => {
-      if (cat === 'all') {
-        sec.classList.remove('hidden');
-      } else {
-        sec.id === 'section-' + cat
-          ? sec.classList.remove('hidden')
-          : sec.classList.add('hidden');
+      /* ── OPEN / CLOSE — only triggered by explicit button clicks ── */
+      function openCart() {
+        document.getElementById("cart-drawer").style.transform =
+          "translateX(0)";
+        document.getElementById("cart-overlay").classList.remove("hidden");
       }
-    });
-
-    // Also re-apply search if active
-    const q = document.getElementById('search-input').value;
-    if (q) handleSearch(q);
-  }
-
-  /* ── SEARCH ── */
-  function handleSearch(query) {
-    const q = query.toLowerCase().trim();
-    let anyVisible = false;
-
-    document.querySelectorAll('.dish-card').forEach(card => {
-      const name = card.dataset.name || '';
-      const sectionHidden = card.closest('.menu-section').classList.contains('hidden');
-      if (sectionHidden) return;
-
-      if (!q || name.includes(q)) {
-        card.classList.remove('hidden');
-        anyVisible = true;
-      } else {
-        card.classList.add('hidden');
+      function closeCart() {
+        document.getElementById("cart-drawer").style.transform =
+          "translateX(100%)";
+        document.getElementById("cart-overlay").classList.add("hidden");
       }
-    });
 
-    // Check each visible section — hide section if all cards hidden
-    document.querySelectorAll('.menu-section:not(.hidden)').forEach(sec => {
-      const visCards = sec.querySelectorAll('.dish-card:not(.hidden)');
-      sec.style.display = visCards.length === 0 ? 'none' : '';
-      if (visCards.length > 0) anyVisible = true;
-    });
+      /* ── ADD TO CART — updates badge only, does NOT open cart ── */
+      function addToCart(id, name, price, img) {
+        const existing = cart.find((i) => i.id === id);
+        if (existing) {
+          existing.qty++;
+        } else {
+          cart.push({ id, name, price, img, qty: 1 });
+        }
+        renderCart();
+        updateBadges();
+        // ✅ Drawer stays closed — user must click Cart button to open
+      }
 
-    document.getElementById('no-results').classList.toggle('hidden', anyVisible || !q);
-  }
-</script>
+      function changeQty(id, delta) {
+        const item = cart.find((i) => i.id === id);
+        if (!item) return;
+        item.qty += delta;
+        if (item.qty <= 0) cart = cart.filter((i) => i.id !== id);
+        renderCart();
+        updateBadges();
+      }
 
-</body>
+      function removeItem(id) {
+        cart = cart.filter((i) => i.id !== id);
+        renderCart();
+        updateBadges();
+      }
+
+      function clearCart() {
+        cart = [];
+        renderCart();
+        updateBadges();
+      }
+
+      function renderCart() {
+        const itemsEl = document.getElementById("cart-items");
+        const emptyEl = document.getElementById("cart-empty");
+        const footerEl = document.getElementById("cart-footer");
+
+        if (cart.length === 0) {
+          emptyEl.classList.remove("hidden");
+          itemsEl.classList.add("hidden");
+          footerEl.classList.add("hidden");
+          return;
+        }
+        emptyEl.classList.add("hidden");
+        itemsEl.classList.remove("hidden");
+        footerEl.classList.remove("hidden");
+
+        itemsEl.innerHTML = cart
+          .map(
+            (item) => `
+      <div class="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl p-3">
+        <img src="${item.img}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-orange-200">
+        <div class="flex-1 min-w-0">
+          <p class="font-serif text-base font-semibold text-stone-900 leading-tight truncate">${item.name}</p>
+          <p class="text-xs text-stone-400 mt-0.5">$${item.price.toFixed(2)} each</p>
+        </div>
+        <div class="flex flex-col items-end gap-2 shrink-0">
+          <button onclick="removeItem('${item.id}')" class="text-stone-300 hover:text-red-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="changeQty('${item.id}',-1)" class="w-6 h-6 rounded-lg bg-white border border-stone-200 hover:border-orange-400 text-stone-600 flex items-center justify-center text-sm font-bold">−</button>
+            <span class="text-sm font-bold text-stone-800 w-4 text-center">${item.qty}</span>
+            <button onclick="changeQty('${item.id}',1)" class="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center text-sm font-bold">+</button>
+          </div>
+          <p class="text-sm font-bold text-orange-500">$${(item.price * item.qty).toFixed(2)}</p>
+        </div>
+      </div>`,
+          )
+          .join("");
+
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const tax = subtotal * 0.1;
+        document.getElementById("cart-subtotal").textContent =
+          `$${subtotal.toFixed(2)}`;
+        document.getElementById("cart-tax").textContent = `$${tax.toFixed(2)}`;
+        document.getElementById("cart-total").textContent =
+          `$${(subtotal + tax).toFixed(2)}`;
+        document.getElementById("cart-header-count").textContent = cart.reduce(
+          (s, i) => s + i.qty,
+          0,
+        );
+      }
+
+      /* ── BADGES — show item count on both cart buttons ── */
+      function updateBadges() {
+        const total = cart.reduce((s, i) => s + i.qty, 0);
+        ["nav-badge", "mob-badge"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (total > 0) {
+            el.textContent = total;
+            el.classList.remove("hidden");
+            el.classList.add("flex");
+          } else {
+            el.classList.add("hidden");
+            el.classList.remove("flex");
+          }
+        });
+      }
+
+      function handleCheckout() {
+        const btn = document.querySelector("#cart-footer button:first-child");
+        btn.textContent = "✓ Order Placed!";
+        btn.classList.replace("bg-orange-500", "bg-green-500");
+        btn.classList.replace("hover:bg-orange-600", "hover:bg-green-600");
+        setTimeout(() => {
+          cart = [];
+          renderCart();
+          updateBadges();
+          closeCart();
+          btn.textContent = "Checkout →";
+          btn.classList.replace("bg-green-500", "bg-orange-500");
+          btn.classList.replace("hover:bg-green-600", "hover:bg-orange-600");
+        }, 1800);
+      }
+
+      function filterCat(el) {
+        document.querySelectorAll(".cat-btn").forEach((b) => {
+          b.classList.remove(
+            "bg-orange-500",
+            "text-white",
+            "border-orange-500",
+          );
+          b.classList.add("bg-white", "text-stone-500", "border-stone-200");
+        });
+        el.classList.add("bg-orange-500", "text-white", "border-orange-500");
+        el.classList.remove("bg-white", "text-stone-500", "border-stone-200");
+      }
+
+      function handleReserve(btn) {
+        btn.textContent = "✓ Reservation Confirmed!";
+        btn.classList.replace("bg-orange-500", "bg-green-500");
+        btn.classList.replace("hover:bg-orange-600", "hover:bg-green-600");
+        setTimeout(() => {
+          btn.textContent = "Confirm Reservation";
+          btn.classList.replace("bg-green-500", "bg-orange-500");
+          btn.classList.replace("hover:bg-green-600", "hover:bg-orange-600");
+        }, 3000);
+      }
+    </script>
+
+    <script>
+      /* ═══════════ MOBILE MENU ═══════════ */
+      function toggleMenu() {
+        const m = document.getElementById("mobileMenu");
+        const isOpen = m.style.transform === "translateX(0%)";
+        m.style.display = "flex";
+        requestAnimationFrame(() => {
+          m.style.transform = isOpen ? "translateX(100%)" : "translateX(0%)";
+        });
+        if (isOpen) {
+          setTimeout(() => {
+            if (m.style.transform === "translateX(100%)")
+              m.style.display = "none";
+          }, 500);
+        }
+      }
+    </script>
+  </body>
 </html>

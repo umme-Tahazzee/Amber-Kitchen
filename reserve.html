@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Amber Kitchen | Reserve a Table</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            orangePrimary: "#EA580C", redDeep: "#96281b", redPale: "#fdf0ee",
+            cream: "#f5f0eb", textDark: "#1a1210", textMid: "#4a3830",
+            borderSoft: "#e8ddd8", gold: "#b8963e", goldLight: "#d4af6a",
+          },
+          fontFamily: {
+            sans: ['DM Sans', 'sans-serif'],
+            serif: ['Cormorant Garamond', 'serif'],
+          },
+          keyframes: {
+            slideUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            successIn: { from: { opacity: '0', transform: 'scale(.94)' }, to: { opacity: '1', transform: 'scale(1)' } },
+          },
+          animation: {
+            'slide-up-1': 'slideUp 0.6s 0.1s both',
+            'slide-up-2': 'slideUp 0.6s 0.2s both',
+            'slide-up-3': 'slideUp 0.6s 0.3s both',
+            'slide-up-4': 'slideUp 0.6s 0.4s both',
+            'slide-up-5': 'slideUp 0.6s 0.5s both',
+            'success-in': 'successIn 0.45s ease both',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    /* ── Prevent horizontal overflow ── */
+    body { overflow-x: hidden; max-width: 100vw; }
+
+    /* ── Calendar strip scrollbar hide ── */
+    #calStrip::-webkit-scrollbar { display: none; }
+    #calStrip { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ── Cart drawer transition ── */
+    #cart-drawer { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── Select arrow fix ── */
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath fill='%234a3830' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-color: #fff; }
+
+    /* ── Step connector active ── */
+    .con-active { background: #EA580C !important; }
+
+    /* ── Smooth panel transition ── */
+    .step-panel { animation: slideUp 0.3s ease both; }
+
+    /* ── Safe area for mobile bottom nav ── */
+    .has-bottom-nav { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
+    /* ── Responsive cal day min-width ── */
+    @media (max-width: 380px) {
+      .cal-day { min-width: 42px !important; padding-left: 6px !important; padding-right: 6px !important; }
+    }
+
+    /* ── Fix step bar label wrapping on xs ── */
+    @media (max-width: 420px) {
+      .step-label { display: none; }
+    }
+
+    /* ── Fix summary card on md ── */
+    @media (min-width: 1024px) {
+      #summaryCard { display: block; }
+    }
+  </style>
+</head>
+<body class="font-sans bg-white text-textDark has-bottom-nav">
+
+<!-- ═══════════ OVERLAY ═══════════ -->
+<div id="cart-overlay" onclick="closeCart()" class="hidden fixed inset-0 bg-black/40 z-40 transition-opacity"></div>
+
+<!-- ═══════════ MOBILE MENU ═══════════ -->
+<div id="mobileMenu" class="fixed inset-0 z-[1100] bg-cream hidden flex-col" 
+style="transform:translateX(100%);transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);">
+  <div class="flex flex-col h-full p-6 sm:p-10 overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <span class="font-serif text-2xl font-bold text-black">Amber <em class="text-orangePrimary not-italic">Kitchen</em></span>
+        <p class="font-serif italic text-gold/70 text-xs tracking-[0.3em] uppercase mt-0.5">Fine Dining</p>
+      </div>
+      <button onclick="toggleMenu()" class="w-9 h-9 rounded-full border bg-orangePrimary
+       border-white/20 text-white
+hover:border-gold hover:text-gold transition text-lg flex items-center justify-center flex-shrink-0">✕</button>
+    </div>
+    <div class="h-px w-full mb-6" style="background:linear-gradient(90deg,transparent,#b8963e 30%,#d4af6a 60%,transparent)"></div>
+    <ul class="flex flex-col gap-1 flex-1">
+      <li><a href="index.html" onclick="toggleMenu()" class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black">Home</a></li>
+      <li><a href="menu.html" onclick="toggleMenu()" class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black">Menu</a></li>
+      <li><a href="about.html" onclick="toggleMenu()" class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black">About</a></li>
+      <li><a href="reserve.html" onclick="toggleMenu()" class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-orangePrimary">Reserve</a></li>
+      <li><a href="contact.html" onclick="toggleMenu()" class="block py-4 border-b border-gray-200 text-2xl font-serif font-bold text-black">Contact</a></li>
+    </ul>
+    <div class="mt-auto space-y-3 pt-6">
+      <a href="reserve.html" onclick="toggleMenu()" class="flex items-center justify-center gap-2 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.2em]" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+        <i class="fa-regular fa-calendar-check"></i> Book a Table
+      </a>
+      <div class="flex gap-3 text-xs text-white/30 justify-center pt-2 flex-wrap">
+        <span>📞 +1 (555) 920-4200</span><span>·</span><span>Mon–Sun 12–11pm</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CART DRAWER ═══════════ -->
+<aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col" style="transform:translateX(100%)">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-orange-100">
+    <div class="flex items-center gap-3">
+      <h2 class="font-serif text-2xl font-semibold text-stone-900">Your Order</h2>
+      <span id="cart-header-count" class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+    </div>
+    <button onclick="closeCart()" class="w-9 h-9 rounded-xl bg-orange-50 hover:bg-orange-100 flex items-center justify-center text-stone-500 hover:text-stone-700 flex-shrink-0">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
+    <div class="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center">
+      <svg class="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
+      </svg>
+    </div>
+    <p class="font-serif text-xl text-stone-400 italic">Your cart is empty</p>
+    <p class="text-sm text-stone-400">Add some delicious dishes to get started</p>
+    <button onclick="closeCart()" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl">Browse Menu</button>
+  </div>
+  <div id="cart-items" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-3"></div>
+  <div id="cart-footer" class="hidden border-t border-orange-100 px-5 py-5 space-y-4">
+    <div class="flex items-center justify-between text-sm text-stone-400"><span>Subtotal</span><span id="cart-subtotal" class="font-semibold text-stone-700">$0.00</span></div>
+    <div class="flex items-center justify-between text-sm text-stone-400"><span>Tax (10%)</span><span id="cart-tax" class="font-semibold text-stone-700">$0.00</span></div>
+    <div class="flex items-center justify-between border-t border-orange-100 pt-4">
+      <span class="font-bold text-stone-900">Total</span>
+      <span id="cart-total" class="font-serif text-2xl font-bold text-orange-500">$0.00</span>
+    </div>
+    <button class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-4 rounded-xl">Checkout →</button>
+    <button onclick="clearCart()" class="w-full border border-stone-200 hover:border-red-300 hover:text-red-500 text-stone-400 text-xs font-semibold py-2.5 rounded-xl">Clear Cart</button>
+  </div>
+</aside>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<header class="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b border-orange-100 h-16">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-3">
+    <a href="index.html" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0">
+      Amber <em class="text-orange-500 not-italic">Kitchen</em>
+    </a>
+    <nav class="hidden lg:flex items-center gap-6 xl:gap-8">
+      <a href="index.html" class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition">Home</a>
+      <a href="menu.html"  class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition">Menu</a>
+      <a href="about.html" class="text-xs font-semibold tracking-widest uppercase text-stone-400 hover:text-orange-500 transition">Our Story</a>
+      <a href="reserve.html" class="text-xs font-semibold tracking-widest uppercase text-orange-500 border-b-2 border-orange-400 pb-0.5">Reserve</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <button onclick="openCart()" class="relative flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 sm:px-4 py-2 rounded-xl transition">
+        <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        <span class="hidden sm:block text-xs font-semibold text-orange-600">Cart</span>
+        <span id="nav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none">0</span>
+      </button>
+      <!-- Hamburger for mobile/tablet -->
+      <button onclick="toggleMenu()" class="lg:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-xl border border-borderSoft hover:border-orangePrimary transition">
+        <span class="w-4 h-0.5 bg-textDark rounded"></span>
+        <span class="w-4 h-0.5 bg-textDark rounded"></span>
+        <span class="w-3 h-0.5 bg-textDark rounded self-start ml-0.5"></span>
+      </button>
+      <a href="reserve.html" class="hidden sm:block bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm transition whitespace-nowrap">
+        Order Now
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="pt-16 relative overflow-hidden" style="background:linear-gradient(160deg,#fdf6f0 0%,#f5ede4 55%,#f0e4d8 100%)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 py-8 sm:py-12 lg:py-20">
+    <div class="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-20 items-end">
+
+      <!-- Left content -->
+      <div>
+        <div class="text-center lg:text-left">
+          <span class="inline-flex items-center gap-2 bg-orange-100 text-orange-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4 sm:mb-5">
+            <span class="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+            Seasonal Menu 2026
+          </span>
+          <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light leading-tight text-stone-900 mb-4 sm:mb-5">
+            Fine <em class="text-orange-500">Dining</em><br>Reimagined
+          </h1>
+          <p class="text-stone-400 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 max-w-sm mx-auto lg:mx-0 font-light">
+            Where tradition meets modern artistry. Locally sourced, seasonally inspired, and passionately crafted for every plate.
+          </p>
+        </div>
+        <!-- perks -->
+        <div class="flex flex-wrap gap-2 justify-center lg:justify-start animate-slide-up-4">
+          <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white border border-borderSoft">
+            <i class="fa-solid fa-check-circle text-sm text-orangePrimary flex-shrink-0"></i>
+            <span class="text-xs font-semibold text-textMid whitespace-nowrap">Instant Confirmation</span>
+          </div>
+          <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white border border-borderSoft">
+            <i class="fa-solid fa-check-circle text-sm text-orangePrimary flex-shrink-0"></i>
+            <span class="text-xs font-semibold text-textMid whitespace-nowrap">Free Cancellation</span>
+          </div>
+          <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white border border-borderSoft">
+            <i class="fa-solid fa-check-circle text-sm text-orangePrimary flex-shrink-0"></i>
+            <span class="text-xs font-semibold text-textMid whitespace-nowrap">Special Requests Welcome</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: Good to Know -->
+      <div class="animate-slide-up-5 hidden lg:block">
+        <div class="bg-white rounded-2xl border border-borderSoft p-6 space-y-4">
+          <p class="text-[10px] font-bold uppercase tracking-[.25em] text-textMid/40">Good to Know</p>
+          <div class="space-y-3.5">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-clock text-sm text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Open Daily</p><p class="text-xs text-textMid/50">Mon–Fri 12pm–10pm · Sat–Sun 11am–11pm</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-user-group text-sm text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Groups of 10+</p><p class="text-xs text-textMid/50">Private event enquiries via contact page</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-shirt text-sm text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Dress Code</p><p class="text-xs text-textMid/50">Smart casual or formal attire requested</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-champagne-glasses text-sm text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Happy Hour</p><p class="text-xs text-textMid/50">Every day 4–6pm · 20% off all drinks</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile: Good to Know accordion -->
+      <div class="lg:hidden animate-slide-up-5">
+        <details class="bg-white rounded-2xl border border-borderSoft overflow-hidden">
+          <summary class="px-5 py-4 flex items-center justify-between cursor-pointer list-none">
+            <span class="text-[10px] font-bold uppercase tracking-[.25em] text-textMid/40">Good to Know</span>
+            <i class="fa-solid fa-chevron-down text-[11px] text-textMid/40"></i>
+          </summary>
+          <div class="px-5 pb-5 space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-clock text-xs text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Open Daily</p><p class="text-xs text-textMid/50">Mon–Fri 12pm–10pm · Sat–Sun 11am–11pm</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-user-group text-xs text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Groups of 10+</p><p class="text-xs text-textMid/50">Private event enquiries via contact page</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-shirt text-xs text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Dress Code</p><p class="text-xs text-textMid/50">Smart casual or formal attire requested</p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-redPale"><i class="fa-solid fa-champagne-glasses text-xs text-orangePrimary"></i></div>
+              <div><p class="text-sm font-semibold text-textDark">Happy Hour</p><p class="text-xs text-textMid/50">Every day 4–6pm · 20% off all drinks</p></div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ BOOKING WIZARD ═══════════ -->
+<section class="py-8 sm:py-12 lg:py-20 px-4 sm:px-8 lg:px-14 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px] gap-8 lg:gap-14 items-start">
+
+      <!-- MAIN FORM -->
+      <div class="min-w-0">
+
+        <!-- ── Step Bar ── -->
+        <div class="flex items-center mb-6 sm:mb-8 opacity-0 translate-y-4 transition-all duration-500" id="stepBar" data-reveal>
+
+          <!-- Step 1 -->
+          <div class="flex flex-col items-center gap-1.5 relative z-[1]">
+            <div id="sc1" class="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full flex items-center justify-center text-[11px] font-bold border-2 flex-shrink-0 transition-all duration-300 bg-orangePrimary border-orangePrimary text-white" style="box-shadow:0 0 0 6px rgba(192,57,43,.12)">
+              <i class="fa-solid fa-calendar-day text-[10px]"></i>
+            </div>
+            <span id="sl1" class="step-label text-[9px] font-bold tracking-[.12em] uppercase text-orangePrimary whitespace-nowrap hidden sm:block">Date &amp; Time</span>
+          </div>
+          <div id="con1" class="flex-1 h-0.5 bg-borderSoft mx-1 mb-0 sm:mb-[22px] transition-all duration-300"></div>
+
+          <!-- Step 2 -->
+          <div class="flex flex-col items-center gap-1.5 relative z-[1]">
+            <div id="sc2" class="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-borderSoft bg-white text-textMid flex-shrink-0 transition-all duration-300">
+              <i class="fa-solid fa-user-group text-[10px]"></i>
+            </div>
+            <span id="sl2" class="step-label text-[9px] font-bold tracking-[.12em] uppercase text-textMid/40 whitespace-nowrap hidden sm:block">Guests</span>
+          </div>
+          <div id="con2" class="flex-1 h-0.5 bg-borderSoft mx-1 mb-0 sm:mb-[22px] transition-all duration-300"></div>
+
+          <!-- Step 3 -->
+          <div class="flex flex-col items-center gap-1.5 relative z-[1]">
+            <div id="sc3" class="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-borderSoft bg-white text-textMid flex-shrink-0 transition-all duration-300">
+              <i class="fa-solid fa-chair text-[10px]"></i>
+            </div>
+            <span id="sl3" class="step-label text-[9px] font-bold tracking-[.12em] uppercase text-textMid/40 whitespace-nowrap hidden sm:block">Dining Area</span>
+          </div>
+          <div id="con3" class="flex-1 h-0.5 bg-borderSoft mx-1 mb-0 sm:mb-[22px] transition-all duration-300"></div>
+
+          <!-- Step 4 -->
+          <div class="flex flex-col items-center gap-1.5 relative z-[1]">
+            <div id="sc4" class="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-borderSoft bg-white text-textMid flex-shrink-0 transition-all duration-300">
+              <i class="fa-solid fa-circle-user text-[10px]"></i>
+            </div>
+            <span id="sl4" class="step-label text-[9px] font-bold tracking-[.12em] uppercase text-textMid/40 whitespace-nowrap hidden sm:block">Your Details</span>
+          </div>
+        </div>
+
+        <!-- ─── STEP 1: Date & Time ─── -->
+        <div class="step-panel active bg-white border border-borderSoft rounded-2xl px-4 sm:px-8 py-5 sm:py-7 shadow-[0_4px_32px_rgba(0,0,0,.05)] opacity-0 translate-y-4 transition-all duration-500" id="step1" data-reveal>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-textDark mb-1">Choose Date &amp; Time</h2>
+          <p class="font-serif italic text-sm sm:text-base mb-5 sm:mb-8 text-textMid/50">Select a date and preferred time slot for your reservation.</p>
+
+          <!-- calendar strip -->
+          <div class="mb-5">
+            <div class="flex items-center justify-between mb-4 gap-2">
+              <button onclick="prevWeek()" class="w-9 h-9 rounded-full border border-borderSoft flex items-center justify-center hover:border-orangePrimary hover:bg-redPale transition text-textMid flex-shrink-0">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i>
+              </button>
+              <p id="calMonth" class="font-serif font-bold text-textDark text-sm sm:text-base sm:text-lg text-center px-1 truncate"></p>
+              <button onclick="nextWeek()" class="w-9 h-9 rounded-full border border-borderSoft flex items-center justify-center hover:border-orangePrimary hover:bg-redPale transition text-textMid flex-shrink-0">
+                <i class="fa-solid fa-chevron-right text-[11px]"></i>
+              </button>
+            </div>
+            <div id="calStrip" class="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1"></div>
+          </div>
+          <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errDate">Please select a date.</p>
+
+          <!-- time slots -->
+          <div class="mb-2">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Select Time Slot</label>
+            <div id="timeSlots" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5 sm:gap-2"></div>
+          </div>
+          <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errTime">Please select a time slot.</p>
+
+          <div class="flex justify-end mt-5 sm:mt-8">
+            <button onclick="goStep(2)" class="text-white px-6 sm:px-8 py-3 rounded-xl text-[11px] font-bold tracking-[.18em] uppercase flex items-center gap-2 transition hover:-translate-y-px" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+              Continue <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 2: Guests ─── -->
+        <div class="step-panel hidden bg-white border border-borderSoft rounded-2xl px-4 sm:px-8 py-5 sm:py-7 shadow-[0_4px_32px_rgba(0,0,0,.05)]" id="step2">
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-textDark mb-1">Number of Guests</h2>
+          <p class="font-serif italic text-sm sm:text-base mb-5 sm:mb-8 text-textMid/50">How many guests will be dining? Select any special occasion too.</p>
+
+          <div class="mb-6 sm:mb-7">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Party Size</label>
+            <div class="flex items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-cream border border-borderSoft w-fit">
+              <button class="w-9 h-9 rounded-[10px] border-[1.5px] border-borderSoft bg-white flex items-center justify-center cursor-pointer text-textMid hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary transition flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed" id="guestMinus" onclick="changeGuests(-1)">
+                <i class="fa-solid fa-minus text-sm"></i>
+              </button>
+              <div class="text-center">
+                <span id="guestVal" class="text-xl sm:text-[20px] font-bold text-textDark min-w-[32px] inline-block text-center">2</span>
+                <p class="text-[10px] font-semibold uppercase tracking-[.12em] mt-1 text-textMid/40">Guests</p>
+              </div>
+              <button class="w-9 h-9 rounded-[10px] border-[1.5px] border-borderSoft bg-white flex items-center justify-center cursor-pointer text-textMid hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary transition flex-shrink-0" id="guestPlus" onclick="changeGuests(1)">
+                <i class="fa-solid fa-plus text-sm"></i>
+              </button>
+            </div>
+            <p class="text-xs mt-3 text-textMid/40">For groups of 10 or more, please <a href="contact.html" class="underline text-orangePrimary">contact us directly</a>.</p>
+          </div>
+
+          <div class="mb-2">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Special Occasion <span class="opacity-40">(optional)</span></label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'none')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-regular fa-circle"></i></div>
+                <span class="text-sm font-semibold text-textDark">None</span>
+              </div>
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'birthday')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-solid fa-cake-candles"></i></div>
+                <span class="text-sm font-semibold text-textDark">Birthday</span>
+              </div>
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'anniversary')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-solid fa-heart"></i></div>
+                <span class="text-sm font-semibold text-textDark">Anniversary</span>
+              </div>
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'date')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-solid fa-champagne-glasses"></i></div>
+                <span class="text-sm font-semibold text-textDark">Date Night</span>
+              </div>
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'business')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-solid fa-briefcase"></i></div>
+                <span class="text-sm font-semibold text-textDark">Business</span>
+              </div>
+              <div class="occ-pill flex items-center gap-2 p-2.5 rounded-xl border-[1.5px] border-borderSoft bg-white cursor-pointer transition hover:border-orangePrimary hover:bg-redPale" onclick="selectOccasion(this,'other')">
+                <div class="occ-icon w-[30px] h-[30px] rounded-[9px] bg-cream flex items-center justify-center text-xs text-textMid flex-shrink-0 transition-all"><i class="fa-solid fa-star"></i></div>
+                <span class="text-sm font-semibold text-textDark">Other</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-5 sm:mt-8 gap-3">
+            <button onclick="goStep(1)" class="px-4 sm:px-6 py-3 rounded-xl border border-borderSoft text-[11px] font-bold tracking-[.18em] uppercase flex items-center gap-2 hover:border-orangePrimary hover:text-orangePrimary transition text-textMid">
+              <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+            </button>
+            <button onclick="goStep(3)" class="text-white px-6 sm:px-8 py-3 rounded-xl text-[11px] font-bold tracking-[.18em] uppercase flex items-center gap-2 transition hover:-translate-y-px" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+              Continue <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 3: Dining Area ─── -->
+        <div class="step-panel hidden bg-white border border-borderSoft rounded-2xl px-4 sm:px-8 py-5 sm:py-7 shadow-[0_4px_32px_rgba(0,0,0,.05)]" id="step3">
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-textDark mb-1">Choose Your Dining Area</h2>
+          <p class="font-serif italic text-sm sm:text-base mb-5 sm:mb-8 text-textMid/50">We have several beautiful spaces for an unforgettable dining experience.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-2">
+            <!-- Main Dining -->
+            <div class="area-card rounded-2xl border-2 border-orangePrimary bg-white overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(192,57,43,.1)] shadow-[0_0_0_4px_rgba(192,57,43,.1)]" id="area-main" onclick="selectArea(this,'main')">
+              <div class="h-24 sm:h-36 relative overflow-hidden" style="background:linear-gradient(135deg,#2d1a14,#1a1210)">
+                <div class="absolute inset-0 opacity-10" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:20px 20px"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fa-solid fa-utensils text-white/20 text-3xl sm:text-4xl"></i>
+                </div>
+              </div>
+              <div class="p-3 sm:p-4 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-serif font-bold text-textDark text-sm sm:text-base leading-tight">Main Dining Room</p>
+                  <p class="text-xs mt-1 text-textMid/50">Elegant setting · Up to 60 guests</p>
+                  <div class="flex flex-wrap gap-1.5 mt-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-orangePrimary/[.12] text-orangePrimary border border-orangePrimary/25">Most Popular</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-cream text-textMid">All day</span>
+                  </div>
+                </div>
+                <div class="area-check w-[22px] h-[22px] rounded-full border-2 border-orangePrimary bg-orangePrimary flex items-center justify-center flex-shrink-0 mt-1 transition-all">
+                  <i class="fa-solid fa-check text-white text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Garden Terrace -->
+            <div class="area-card rounded-2xl border-2 border-borderSoft bg-white overflow-hidden cursor-pointer transition-all hover:border-orangePrimary hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(192,57,43,.1)]" id="area-terrace" onclick="selectArea(this,'terrace')">
+              <div class="h-24 sm:h-36 relative overflow-hidden" style="background:linear-gradient(135deg,#1e3a28,#0f2318)">
+                <div class="absolute inset-0 opacity-10" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:20px 20px"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fa-solid fa-tree text-white/15 text-3xl sm:text-4xl"></i>
+                </div>
+              </div>
+              <div class="p-3 sm:p-4 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-serif font-bold text-textDark text-sm sm:text-base leading-tight">Garden Terrace</p>
+                  <p class="text-xs mt-1 text-textMid/50">Al fresco dining · Up to 24 guests</p>
+                  <div class="flex flex-wrap gap-1.5 mt-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-[rgba(34,139,34,.12)] text-[#228b22] border border-[rgba(34,139,34,.25)]">Outdoor</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-cream text-textMid">Seasonal</span>
+                  </div>
+                </div>
+                <div class="area-check w-[22px] h-[22px] rounded-full border-2 border-borderSoft flex items-center justify-center flex-shrink-0 mt-1 transition-all">
+                  <i class="fa-solid fa-check text-white text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bar Lounge -->
+            <div class="area-card rounded-2xl border-2 border-borderSoft bg-white overflow-hidden cursor-pointer transition-all hover:border-orangePrimary hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(192,57,43,.1)]" id="area-bar" onclick="selectArea(this,'bar')">
+              <div class="h-24 sm:h-36 relative overflow-hidden" style="background:linear-gradient(135deg,#1a1a2e,#0f0f1e)">
+                <div class="absolute inset-0 opacity-10" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:20px 20px"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fa-solid fa-martini-glass text-white/15 text-3xl sm:text-4xl"></i>
+                </div>
+              </div>
+              <div class="p-3 sm:p-4 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-serif font-bold text-textDark text-sm sm:text-base leading-tight">Bar Lounge</p>
+                  <p class="text-xs mt-1 text-textMid/50">Casual dining · Up to 12 guests</p>
+                  <div class="flex flex-wrap gap-1.5 mt-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-gold/[.15] text-gold border border-gold/30">Cocktails</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-cream text-textMid">Walk-in friendly</span>
+                  </div>
+                </div>
+                <div class="area-check w-[22px] h-[22px] rounded-full border-2 border-borderSoft flex items-center justify-center flex-shrink-0 mt-1 transition-all">
+                  <i class="fa-solid fa-check text-white text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Private Dining -->
+            <div class="area-card rounded-2xl border-2 border-borderSoft bg-white overflow-hidden cursor-pointer transition-all hover:border-orangePrimary hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(192,57,43,.1)]" id="area-private" onclick="selectArea(this,'private')">
+              <div class="h-24 sm:h-36 relative overflow-hidden" style="background:linear-gradient(135deg,#2a1a0a,#1a0f00)">
+                <div class="absolute inset-0 opacity-10" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:20px 20px"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fa-solid fa-crown text-white/15 text-3xl sm:text-4xl"></i>
+                </div>
+              </div>
+              <div class="p-3 sm:p-4 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-serif font-bold text-textDark text-sm sm:text-base leading-tight">Private Dining Room</p>
+                  <p class="text-xs mt-1 text-textMid/50">Exclusive setting · Up to 24 guests</p>
+                  <div class="flex flex-wrap gap-1.5 mt-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-gold/[.15] text-gold border border-gold/30">Premium</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-cream text-textMid">On request</span>
+                  </div>
+                </div>
+                <div class="area-check w-[22px] h-[22px] rounded-full border-2 border-borderSoft flex items-center justify-center flex-shrink-0 mt-1 transition-all">
+                  <i class="fa-solid fa-check text-white text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-5 sm:mt-8 gap-3">
+            <button onclick="goStep(2)" class="px-4 sm:px-6 py-3 rounded-xl border border-borderSoft text-[11px] font-bold tracking-[.18em] uppercase flex items-center gap-2 hover:border-orangePrimary hover:text-orangePrimary transition text-textMid">
+              <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+            </button>
+            <button onclick="goStep(4)" class="text-white px-6 sm:px-8 py-3 rounded-xl text-[11px] font-bold tracking-[.18em] uppercase flex items-center gap-2 transition hover:-translate-y-px" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+              Continue <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 4: Your Details ─── -->
+        <div class="step-panel hidden bg-white border border-borderSoft rounded-2xl px-4 sm:px-8 py-5 sm:py-7 shadow-[0_4px_32px_rgba(0,0,0,.05)]" id="step4">
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-textDark mb-1">Your Details</h2>
+          <p class="font-serif italic text-sm sm:text-base mb-5 sm:mb-8 text-textMid/50">Almost done — just your contact information and any special requests.</p>
+
+          <form id="detailsForm" onsubmit="confirmReservation(event)" novalidate class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">First Name *</label>
+                <input type="text" id="rfFirst" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] placeholder:text-textMid/30" placeholder="John" autocomplete="given-name"/>
+                <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errFirst">Please enter your name.</p>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Last Name</label>
+                <input type="text" id="rfLast" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] placeholder:text-textMid/30" placeholder="Doe" autocomplete="family-name"/>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Email Address *</label>
+                <input type="email" id="rfEmail" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] placeholder:text-textMid/30" placeholder="your@email.com" autocomplete="email"/>
+                <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errEmail">Please enter a valid email.</p>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Phone Number *</label>
+                <input type="tel" id="rfPhone" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] placeholder:text-textMid/30" placeholder="+1 (555) 000-0000" autocomplete="tel"/>
+                <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errPhone">Please enter a phone number.</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Dietary Requirements <span class="opacity-40">(optional)</span></label>
+              <div class="flex flex-wrap gap-2" id="dietaryChips">
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Vegetarian</button>
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Vegan</button>
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Gluten Free</button>
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Halal</button>
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Kosher</button>
+                <button type="button" class="diet-pill px-3.5 py-1.5 rounded-full text-[11px] font-semibold border-[1.5px] border-borderSoft bg-white text-textMid cursor-pointer transition hover:border-orangePrimary hover:bg-redPale hover:text-orangePrimary" onclick="toggleDiet(this)">Nut Allergy</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">Special Requests <span class="opacity-40">(optional)</span></label>
+              <textarea id="rfRequests" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] placeholder:text-textMid/30 resize-none leading-relaxed" rows="3" placeholder="High chair needed, window seat preferred, celebrating a birthday…"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-textMid/50 mb-2">How did you hear about us? <span class="opacity-40">(optional)</span></label>
+              <select id="rfSource" class="w-full border-[1.5px] border-borderSoft rounded-xl px-3.5 py-3 text-sm text-textDark outline-none bg-white transition focus:border-orangePrimary focus:shadow-[0_0_0_3px_rgba(192,57,43,.08)] cursor-pointer appearance-none pr-8">
+                <option value="">Select an option</option>
+                <option>Google</option>
+                <option>Instagram</option>
+                <option>Friend / Family recommendation</option>
+                <option>Yelp / TripAdvisor</option>
+                <option>Walk-by / Saw the restaurant</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="flex items-start gap-3 p-4 rounded-xl bg-cream border border-borderSoft">
+              <input type="checkbox" id="rfTerms" class="mt-0.5 w-4 h-4 rounded cursor-pointer flex-shrink-0" style="accent-color:#EA580C"/>
+              <label for="rfTerms" class="text-xs leading-relaxed cursor-pointer text-textMid/60">
+                I agree to the <a href="#" class="text-orangePrimary underline">cancellation policy</a>. Reservations can be modified or cancelled up to 2 hours before the booking time at no charge.
+              </label>
+            </div>
+            <p class="hidden text-[11px] text-[#e74c3c] mt-1.5" id="errTerms">Please accept the cancellation policy.</p>
+
+            <div class="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-2">
+              <button type="button" onclick="goStep(3)" class="px-4 sm:px-6 py-3 rounded-xl border border-borderSoft text-[11px] font-bold tracking-[.18em] uppercase flex items-center justify-center gap-2 hover:border-orangePrimary hover:text-orangePrimary transition text-textMid">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+              </button>
+              <button type="submit" id="confirmBtn" class="text-white px-6 sm:px-8 py-3 rounded-xl text-[11px] font-bold tracking-[.18em] uppercase flex items-center justify-center gap-2 transition hover:-translate-y-px" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+                <span id="confirmLabel"><i class="fa-solid fa-lock text-[10px]"></i> Confirm Reservation</span>
+                <span id="confirmSpinner" class="hidden"><i class="fa-solid fa-spinner fa-spin"></i> Booking…</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ─── STEP 5: Confirmation ─── -->
+        <div class="step-panel hidden bg-white border border-borderSoft rounded-2xl px-4 sm:px-8 py-5 sm:py-7 shadow-[0_4px_32px_rgba(0,0,0,.05)]" id="step5">
+          <div class="text-center py-4 sm:py-6 animate-success-in">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 sm:mb-6 relative">
+              <svg viewBox="0 0 80 80" class="w-full h-full">
+                <circle cx="40" cy="40" r="38" fill="#fdf0ee" stroke="#fae0da" stroke-width="2"/>
+                <path id="tickPath" d="M22 40 L35 53 L58 27" fill="none" stroke="#EA580C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:60;stroke-dashoffset:60;transition:stroke-dashoffset 0.6s 0.3s ease"/>
+              </svg>
+            </div>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-textDark mb-2">You're All Set!</h2>
+            <p class="font-serif italic text-lg sm:text-xl mb-6 sm:mb-8 text-textMid/55">Your table has been reserved. We can't wait to welcome you.</p>
+
+            <div class="bg-cream rounded-2xl border border-borderSoft p-4 sm:p-6 text-left max-w-md mx-auto mb-6 sm:mb-8">
+              <div class="flex items-center justify-between mb-4 gap-2 flex-wrap">
+                <p class="text-[10px] font-bold uppercase tracking-[.25em] text-textMid/40">Booking Summary</p>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.12em] bg-[rgba(34,139,34,.12)] text-[#228b22] border border-[rgba(34,139,34,.25)]">Confirmed</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Reference</span><span class="text-sm font-bold text-textDark" id="bookRef">SVR-00000</span></div>
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Date</span><span class="text-sm font-semibold text-textDark text-right" id="bookDate">—</span></div>
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Time</span><span class="text-sm font-semibold text-textDark" id="bookTime">—</span></div>
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Guests</span><span class="text-sm font-semibold text-textDark" id="bookGuests">—</span></div>
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Area</span><span class="text-sm font-semibold text-textDark" id="bookArea">—</span></div>
+                <div class="flex justify-between gap-4"><span class="text-sm text-textMid/60 flex-shrink-0">Name</span><span class="text-sm font-semibold text-textDark" id="bookName">—</span></div>
+              </div>
+            </div>
+
+            <p class="text-sm mb-5 sm:mb-6 text-textMid/50 px-2">
+              A confirmation has been sent to <strong id="bookEmail" class="text-textDark break-all"></strong>
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <a href="menu.html" class="text-white px-6 sm:px-8 py-3 rounded-xl text-[11px] font-bold tracking-[.18em] uppercase inline-flex items-center gap-2 justify-center transition hover:-translate-y-px" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 15px rgba(192,57,43,.35)">
+                <i class="fa-solid fa-utensils text-[10px]"></i> Browse Menu
+              </a>
+              <button onclick="newBooking()" class="px-6 sm:px-8 py-3 rounded-xl border border-borderSoft text-[11px] font-bold tracking-[.18em] uppercase hover:border-orangePrimary hover:text-orangePrimary transition text-textMid flex items-center gap-2 justify-center">
+                <i class="fa-solid fa-plus text-[10px]"></i> New Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUMMARY SIDEBAR ── -->
+      <div id="summaryCol" class="lg:order-last">
+        <!-- Mobile summary strip -->
+        <div class="lg:hidden mb-5 bg-cream rounded-2xl border border-borderSoft p-3 sm:p-4 flex items-center gap-2 sm:gap-3 flex-wrap text-xs" id="mobileSummaryStrip">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-orangePrimary text-[11px]"></i>
+            <span class="font-semibold text-textDark" id="mobSumDate">No date</span>
+          </div>
+          <span class="text-borderSoft hidden sm:inline">·</span>
+          <div class="flex items-center gap-1.5">
+            <i class="fa-regular fa-clock text-orangePrimary text-[11px]"></i>
+            <span class="font-semibold text-textDark" id="mobSumTime">No time</span>
+          </div>
+          <span class="text-borderSoft hidden sm:inline">·</span>
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-user-group text-orangePrimary text-[11px]"></i>
+            <span class="font-semibold text-textDark" id="mobSumGuests">2 Guests</span>
+          </div>
+        </div>
+
+        <!-- Desktop summary card -->
+        <div class="hidden lg:block bg-white border border-borderSoft rounded-[18px] p-[22px] sticky top-[88px] opacity-0 translate-y-4 transition-all duration-500" id="summaryCard" data-reveal>
+          <p class="text-[10px] font-bold uppercase tracking-[.25em] mb-5 text-textMid/40">Your Reservation</p>
+          <div class="space-y-0">
+            <div class="flex justify-between items-center py-[9px] border-b border-borderSoft/50 gap-2">
+              <div class="flex items-center gap-2 text-sm text-textMid/50 flex-shrink-0"><i class="fa-regular fa-calendar w-4 text-center text-xs text-orangePrimary"></i>Date</div>
+              <span class="text-sm font-semibold text-textDark text-right" id="sumDate">Not selected</span>
+            </div>
+            <div class="flex justify-between items-center py-[9px] border-b border-borderSoft/50 gap-2">
+              <div class="flex items-center gap-2 text-sm text-textMid/50 flex-shrink-0"><i class="fa-regular fa-clock w-4 text-center text-xs text-orangePrimary"></i>Time</div>
+              <span class="text-sm font-semibold text-textDark" id="sumTime">Not selected</span>
+            </div>
+            <div class="flex justify-between items-center py-[9px] border-b border-borderSoft/50 gap-2">
+              <div class="flex items-center gap-2 text-sm text-textMid/50 flex-shrink-0"><i class="fa-solid fa-user-group w-4 text-center text-xs text-orangePrimary"></i>Guests</div>
+              <span class="text-sm font-semibold text-textDark" id="sumGuests">2</span>
+            </div>
+            <div class="flex justify-between items-center py-[9px] border-b border-borderSoft/50 gap-2">
+              <div class="flex items-center gap-2 text-sm text-textMid/50 flex-shrink-0"><i class="fa-solid fa-chair w-4 text-center text-xs text-orangePrimary"></i>Area</div>
+              <span class="text-sm font-semibold text-textDark" id="sumArea">Main Dining</span>
+            </div>
+            <div class="flex justify-between items-center py-[9px] gap-2">
+              <div class="flex items-center gap-2 text-sm text-textMid/50 flex-shrink-0"><i class="fa-solid fa-star w-4 text-center text-xs text-gold"></i>Occasion</div>
+              <span class="text-sm font-semibold text-textDark" id="sumOccasion">None</span>
+            </div>
+          </div>
+
+          <div class="h-px my-5 opacity-30" style="background:linear-gradient(90deg,transparent,#b8963e 30%,#d4af6a 60%,transparent)"></div>
+
+          <div class="mb-4">
+            <div class="flex justify-between text-[10px] font-bold uppercase tracking-[.15em] mb-2">
+              <span class="text-textMid/40">Progress</span>
+              <span id="stepPct" class="text-orangePrimary">Step 1 of 4</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-borderSoft overflow-hidden">
+              <div id="progressBar" class="h-full rounded-full transition-all duration-500 bg-orangePrimary" style="width:25%"></div>
+            </div>
+          </div>
+
+          <div class="space-y-2.5 mt-5">
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-cream">
+              <i class="fa-solid fa-circle-info text-xs mt-0.5 flex-shrink-0 text-gold"></i>
+              <p class="text-xs leading-relaxed text-textMid/60">Free cancellation up to 2 hours before your booking.</p>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-cream">
+              <i class="fa-solid fa-circle-info text-xs mt-0.5 flex-shrink-0 text-gold"></i>
+              <p class="text-xs leading-relaxed text-textMid/60">Tables are held for 15 minutes. Please arrive on time or call ahead.</p>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-borderSoft/50">
+            <p class="text-[10px] font-bold uppercase tracking-[.2em] mb-3 text-textMid/40">Prefer to Call?</p>
+            <a href="tel:+15559204200" class="flex items-center gap-3 p-3 rounded-xl border border-borderSoft bg-white hover:border-orangePrimary transition">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-redPale">
+                <i class="fa-solid fa-phone text-xs text-orangePrimary"></i>
+              </div>
+              <div>
+                <p class="font-semibold text-textDark text-xs">+1 (555) 920-4200</p>
+                <p class="text-[10px] text-textMid/40">Mon–Sun · 10am–11pm</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer style="background:linear-gradient(160deg,#1a1210,#2d1b16)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 py-10 sm:py-12 lg:py-16">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 mb-8 sm:mb-10 lg:mb-12">
+      <div class="col-span-2 sm:col-span-2 md:col-span-1">
+        <span class="font-serif text-2xl font-bold text-white">Amber <em class="text-orangePrimary not-italic">Kitchen</em></span>
+        <p class="font-serif italic text-xs tracking-[.3em] uppercase mt-0.5 mb-4 text-gold/60">Fine Dining</p>
+        <p class="text-sm leading-relaxed text-white/40 max-w-xs">Where every dish tells a story of passion, craft, and the finest ingredients.</p>
+        <div class="flex gap-3 mt-5">
+          <a href="#" class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-xs text-white/40 hover:border-gold hover:text-gold transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-xs text-white/40 hover:border-gold hover:text-gold transition"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-xs text-white/40 hover:border-gold hover:text-gold transition"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-[.25em] font-semibold mb-4 sm:mb-5 text-white/70">Navigation</p>
+        <ul class="space-y-3">
+          <li><a href="index.html" class="text-sm text-white/40 hover:text-gold transition">Home</a></li>
+          <li><a href="menu.html" class="text-sm text-white/40 hover:text-gold transition">Menu</a></li>
+          <li><a href="reserve.html" class="text-sm text-gold">Reserve</a></li>
+          <li><a href="contact.html" class="text-sm text-white/40 hover:text-gold transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-[.25em] font-semibold mb-4 sm:mb-5 text-white/70">Hours</p>
+        <ul class="space-y-2">
+          <li class="text-sm text-white/40">Mon–Fri · 12pm–10pm</li>
+          <li class="text-sm text-white/40">Sat–Sun · 11am–11pm</li>
+          <li class="text-sm mt-3 text-white/40">Happy Hour · 4–6pm</li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-[.25em] font-semibold mb-4 sm:mb-5 text-white/70">Contact</p>
+        <ul class="space-y-3">
+          <li class="text-sm text-white/40">📍 42 West 58th St, New York</li>
+          <li class="text-sm text-white/40">📞 +1 (555) 920-4200</li>
+          <li class="text-sm text-white/40">✉️ hello@amberkitchen.com</li>
+        </ul>
+      </div>
+    </div>
+    <div class="h-px mb-6 opacity-20" style="background:linear-gradient(90deg,transparent,#b8963e 30%,#d4af6a 60%,transparent)"></div>
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="text-xs text-white/30">© 2026 Amber Kitchen. All rights reserved.</p>
+      <p class="font-serif italic text-sm text-gold/40">Where every dish tells a story</p>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<!-- ═══════════ MOBILE BOTTOM NAV ═══════════ -->
+<nav class="fixed bottom-0 left-0 right-0 z-[900] bg-white border-t border-borderSoft flex items-center justify-around py-2 shadow-[0_-4px_20px_rgba(26,18,16,.08)] md:hidden" style="padding-bottom:max(10px,env(safe-area-inset-bottom))">
+  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em]
+   uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" 
+   onclick="location.href='index.html'">
+    <a href="/index.html"><i class="fa-solid fa-house text-[17px]"></i><span>Home</span></a>
+  </div>
+  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='menu.html'">
+    <a href="menu.html"><i class="fa-solid fa-utensils text-[17px]"></i><span>Menu</span></a>
+  </div>
+  <div>
+    <div class="w-[50px] h-[50px] rounded-[16px] flex items-center justify-center text-white cursor-pointer transition hover:scale-105 active:scale-95 -mt-3" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 16px rgba(192,57,43,.45)" onclick="window.scrollTo({top:400,behavior:'smooth'})">
+      <i class="fa-regular fa-calendar-check text-[19px]"></i>
+    </div>
+  </div>
+  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='contact.html'">
+    <a href="contact.html"><i class="fa-solid fa-paper-plane text-[17px]"></i><span>Contact</span></a>
+  </div>
+  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='profile.html'">
+    <a href="login.html"><i class="fa-regular fa-circle-user text-[17px]"></i><span>Profile</span></a>
+  </div>
+</nav>
+
+<script>
+/* ═══════════ STATE ═══════════ */
+let currentStep = 1;
+let selectedDate = null;
+let selectedTime = null;
+let guestCount = 2;
+let selectedOccasion = 'none';
+let selectedArea = 'main';
+let weekOffset = 0;
+
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TIME_SLOTS  = ['12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM'];
+const FULL_SLOTS  = ['1:00 PM','2:30 PM','7:30 PM'];
+const AREA_LABELS = { main:'Main Dining', terrace:'Garden Terrace', bar:'Bar Lounge', private:'Private Room' };
+
+/* ═══════════ INIT ═══════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  buildCalendar();
+  buildTimeSlots();
+  initReveal();
+});
+
+/* ═══════════ REVEAL ═══════════ */
+function initReveal() {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.remove('opacity-0','translate-y-4');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+}
+
+/* ═══════════ CALENDAR ═══════════ */
+function buildCalendar() {
+  const strip = document.getElementById('calStrip');
+  strip.innerHTML = '';
+  const today = new Date();
+  const todayMidnight = new Date(today); todayMidnight.setHours(0,0,0,0);
+
+  const base = new Date(todayMidnight);
+  base.setDate(base.getDate() + weekOffset * 7);
+
+  const startOfWeek = new Date(base);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+  document.getElementById('calMonth').textContent = MONTHS[startOfWeek.getMonth()] + ' ' + startOfWeek.getFullYear();
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    const isPast     = d < todayMidnight;
+    const isToday    = d.toDateString() === new Date().toDateString();
+    const isSelected = selectedDate && d.toDateString() === selectedDate.toDateString();
+
+    const el = document.createElement('div');
+    el.className = [
+      'cal-day flex flex-col items-center gap-1 py-2.5 px-2.5 rounded-xl border-[1.5px] bg-white min-w-[48px] transition-all flex-shrink-0 select-none',
+      isPast     ? 'opacity-30 cursor-not-allowed pointer-events-none border-borderSoft' :
+      isSelected ? 'bg-orangePrimary border-orangePrimary cursor-pointer shadow-md' :
+      isToday    ? 'border-gold cursor-pointer hover:border-orangePrimary hover:bg-redPale' :
+                   'border-borderSoft cursor-pointer hover:border-orangePrimary hover:bg-redPale'
+    ].join(' ');
+
+    const dayName = document.createElement('span');
+    dayName.className = 'text-[9px] font-bold uppercase tracking-[.1em] ' + (isSelected ? 'text-white' : 'text-textMid/50');
+    dayName.textContent = DAYS[d.getDay()];
+
+    const dayNum = document.createElement('span');
+    dayNum.className = 'text-base font-black leading-none ' + (isSelected ? 'text-white' : 'text-textDark');
+    dayNum.textContent = d.getDate();
+
+    el.appendChild(dayName);
+    el.appendChild(dayNum);
+    if (!isPast) el.onclick = () => selectDate(d);
+    strip.appendChild(el);
+  }
+}
+
+function selectDate(d) {
+  selectedDate = d;
+  buildCalendar();
+  updateSummary();
+  document.getElementById('errDate').classList.add('hidden');
+}
+
+function prevWeek() { weekOffset--; buildCalendar(); }
+function nextWeek() { weekOffset++; buildCalendar(); }
+
+/* ═══════════ TIME SLOTS ═══════════ */
+function buildTimeSlots() {
+  const container = document.getElementById('timeSlots');
+  container.innerHTML = '';
+  TIME_SLOTS.forEach(t => {
+    const isFull   = FULL_SLOTS.includes(t);
+    const isActive = selectedTime === t;
+    const el = document.createElement('div');
+    el.className = [
+      'py-[9px] px-2 rounded-[10px] border-[1.5px] text-center text-[11px] font-bold leading-tight transition-all',
+      isFull   ? 'opacity-35 cursor-not-allowed bg-[#f9f6f4] border-borderSoft text-textMid' :
+      isActive ? 'bg-orangePrimary border-orangePrimary text-white cursor-pointer shadow' :
+                 'bg-white border-borderSoft text-textMid cursor-pointer hover:border-orangePrimary hover:text-orangePrimary hover:bg-redPale'
+    ].join(' ');
+
+    if (isFull) {
+      el.innerHTML = t + '<br><span class="text-[9px] font-medium opacity-70">Full</span>';
+    } else {
+      el.textContent = t;
+      el.onclick = () => {
+        selectedTime = t;
+        buildTimeSlots();
+        updateSummary();
+        document.getElementById('errTime').classList.add('hidden');
+      };
+    }
+    container.appendChild(el);
+  });
+}
+
+/* ═══════════ GUESTS ═══════════ */
+function changeGuests(delta) {
+  guestCount = Math.max(1, Math.min(9, guestCount + delta));
+  document.getElementById('guestVal').textContent = guestCount;
+  document.getElementById('guestMinus').disabled = guestCount <= 1;
+  document.getElementById('guestPlus').disabled  = guestCount >= 9;
+  updateSummary();
+}
+
+/* ═══════════ OCCASION ═══════════ */
+function selectOccasion(el, val) {
+  selectedOccasion = val;
+  document.querySelectorAll('.occ-pill').forEach(p => {
+    p.classList.remove('border-orangePrimary','bg-redPale');
+    p.querySelector('.occ-icon').classList.remove('bg-orangePrimary','text-white');
+    p.querySelector('.occ-icon').classList.add('bg-cream','text-textMid');
+  });
+  el.classList.add('border-orangePrimary','bg-redPale');
+  el.querySelector('.occ-icon').classList.remove('bg-cream','text-textMid');
+  el.querySelector('.occ-icon').classList.add('bg-orangePrimary','text-white');
+  updateSummary();
+}
+
+/* ═══════════ AREA ═══════════ */
+function selectArea(el, val) {
+  selectedArea = val;
+  document.querySelectorAll('.area-card').forEach(c => {
+    c.classList.remove('border-orangePrimary','shadow-[0_0_0_4px_rgba(192,57,43,.1)]');
+    c.classList.add('border-borderSoft');
+    const chk = c.querySelector('.area-check');
+    if (chk) { chk.classList.remove('bg-orangePrimary','border-orangePrimary'); chk.classList.add('border-borderSoft'); }
+  });
+  el.classList.add('border-orangePrimary','shadow-[0_0_0_4px_rgba(192,57,43,.1)]');
+  el.classList.remove('border-borderSoft');
+  const chk = el.querySelector('.area-check');
+  if (chk) { chk.classList.add('bg-orangePrimary','border-orangePrimary'); chk.classList.remove('border-borderSoft'); }
+  updateSummary();
+}
+
+/* ═══════════ DIETARY ═══════════ */
+function toggleDiet(el) {
+  el.classList.toggle('border-orangePrimary');
+  el.classList.toggle('bg-redPale');
+  el.classList.toggle('text-orangePrimary');
+  el.classList.toggle('border-borderSoft');
+}
+
+/* ═══════════ SUMMARY ═══════════ */
+function updateSummary() {
+  const dateStr = selectedDate
+    ? selectedDate.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})
+    : 'Not selected';
+  const timeStr = selectedTime || 'Not selected';
+  const occ = selectedOccasion === 'none' ? 'None' : selectedOccasion.charAt(0).toUpperCase() + selectedOccasion.slice(1);
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sumDate', dateStr);
+  set('sumTime', timeStr);
+  set('sumGuests', guestCount + ' guest' + (guestCount > 1 ? 's' : ''));
+  set('sumArea', AREA_LABELS[selectedArea] || selectedArea);
+  set('sumOccasion', occ);
+
+  set('mobSumDate',   selectedDate ? selectedDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'No date');
+  set('mobSumTime',   selectedTime || 'No time');
+  set('mobSumGuests', guestCount + ' Guest' + (guestCount > 1 ? 's' : ''));
+}
+
+/* ═══════════ STEP NAVIGATION ═══════════ */
+function goStep(n) {
+  // Validate step 1 before advancing
+  if (n > currentStep && currentStep === 1) {
+    if (!selectedDate) { document.getElementById('errDate').classList.remove('hidden'); return; }
+    if (!selectedTime) { document.getElementById('errTime').classList.remove('hidden'); return; }
+  }
+
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.add('hidden'));
+  document.getElementById('step' + n).classList.remove('hidden');
+  currentStep = n;
+
+  // Update step indicators
+  for (let i = 1; i <= 4; i++) {
+    const sc = document.getElementById('sc' + i);
+    const sl = document.getElementById('sl' + i);
+    if (!sc) continue;
+
+    sc.classList.remove('bg-orangePrimary','border-orangePrimary','text-white','bg-white','border-borderSoft','text-textMid');
+    sc.style.boxShadow = '';
+
+    if (i <= n) {
+      sc.classList.add('bg-orangePrimary','border-orangePrimary','text-white');
+      if (i === n) sc.style.boxShadow = '0 0 0 6px rgba(192,57,43,.12)';
+      if (sl) { sl.classList.add('text-orangePrimary'); sl.classList.remove('text-textMid/40'); }
+    } else {
+      sc.classList.add('bg-white','border-borderSoft','text-textMid');
+      if (sl) { sl.classList.remove('text-orangePrimary'); sl.classList.add('text-textMid/40'); }
+    }
+
+    // Connectors
+    if (i < 4) {
+      const con = document.getElementById('con' + i);
+      if (con) con.style.background = i < n ? '#EA580C' : '';
+    }
+  }
+
+  const pct = Math.min(n, 4) * 25;
+  const pb  = document.getElementById('progressBar');
+  const sp  = document.getElementById('stepPct');
+  if (pb) pb.style.width = pct + '%';
+  if (sp) sp.textContent = 'Step ' + Math.min(n, 4) + ' of 4';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══════════ CONFIRM ═══════════ */
+function confirmReservation(e) {
+  e.preventDefault();
+  let ok = true;
+  const first = document.getElementById('rfFirst').value.trim();
+  const email = document.getElementById('rfEmail').value.trim();
+  const phone = document.getElementById('rfPhone').value.trim();
+  const terms = document.getElementById('rfTerms').checked;
+
+  ['errFirst','errEmail','errPhone','errTerms'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['rfFirst','rfEmail','rfPhone'].forEach(id => document.getElementById(id).style.borderColor = '');
+
+  if (!first) {
+    document.getElementById('errFirst').classList.remove('hidden');
+    document.getElementById('rfFirst').style.borderColor = '#e74c3c';
+    ok = false;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('errEmail').classList.remove('hidden');
+    document.getElementById('rfEmail').style.borderColor = '#e74c3c';
+    ok = false;
+  }
+  if (!phone) {
+    document.getElementById('errPhone').classList.remove('hidden');
+    document.getElementById('rfPhone').style.borderColor = '#e74c3c';
+    ok = false;
+  }
+  if (!terms) { document.getElementById('errTerms').classList.remove('hidden'); ok = false; }
+  if (!ok) return;
+
+  const btn = document.getElementById('confirmBtn');
+  document.getElementById('confirmLabel').classList.add('hidden');
+  document.getElementById('confirmSpinner').classList.remove('hidden');
+  btn.disabled = true;
+
+  setTimeout(() => {
+    const ref = 'SVR-' + Math.floor(10000 + Math.random() * 90000);
+    document.getElementById('bookRef').textContent    = ref;
+    document.getElementById('bookDate').textContent   = selectedDate ? selectedDate.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '—';
+    document.getElementById('bookTime').textContent   = selectedTime || '—';
+    document.getElementById('bookGuests').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '');
+    document.getElementById('bookArea').textContent   = AREA_LABELS[selectedArea] || selectedArea;
+    document.getElementById('bookName').textContent   = first + ' ' + document.getElementById('rfLast').value.trim();
+    document.getElementById('bookEmail').textContent  = email;
+
+    setTimeout(() => {
+      const tp = document.getElementById('tickPath');
+      if (tp) tp.style.strokeDashoffset = '0';
+    }, 100);
+
+    goStep(5);
+    document.getElementById('confirmLabel').classList.remove('hidden');
+    document.getElementById('confirmSpinner').classList.add('hidden');
+    btn.disabled = false;
+  }, 1500);
+}
+
+/* ═══════════ NEW BOOKING ═══════════ */
+function newBooking() {
+  selectedDate = null; selectedTime = null;
+  guestCount = 2; selectedOccasion = 'none'; selectedArea = 'main';
+  weekOffset = 0;
+  buildCalendar();
+  buildTimeSlots();
+  document.getElementById('detailsForm').reset();
+  document.querySelectorAll('.diet-pill').forEach(p => p.classList.remove('border-orangePrimary','bg-redPale','text-orangePrimary'));
+  updateSummary();
+  goStep(1);
+}
+
+/* ═══════════ CART (stub) ═══════════ */
+function openCart() {
+  document.getElementById('cart-drawer').style.transform = 'translateX(0)';
+  document.getElementById('cart-overlay').classList.remove('hidden');
+}
+function closeCart() {
+  document.getElementById('cart-drawer').style.transform = 'translateX(100%)';
+  document.getElementById('cart-overlay').classList.add('hidden');
+}
+function clearCart() { /* stub */ }
+
+/* ═══════════ MOBILE MENU ═══════════ */
+function toggleMenu() {
+  const m = document.getElementById('mobileMenu');
+  const isOpen = m.style.transform === 'translateX(0%)';
+  m.style.display = 'flex';
+  requestAnimationFrame(() => {
+    m.style.transform = isOpen ? 'translateX(100%)' : 'translateX(0%)';
+  });
+  if (isOpen) {
+    setTimeout(() => { if (m.style.transform === 'translateX(100%)') m.style.display = 'none'; }, 500);
+  }
+}
+</script>
+</body>
+</html>
