@@ -791,27 +791,57 @@ hover:border-gold hover:text-gold transition text-lg flex items-center justify-c
 </main>
 
 <!-- ═══════════ MOBILE BOTTOM NAV ═══════════ -->
-<nav class="fixed bottom-0 left-0 right-0 z-[900] bg-white border-t border-borderSoft flex items-center justify-around py-2 shadow-[0_-4px_20px_rgba(26,18,16,.08)] md:hidden" style="padding-bottom:max(10px,env(safe-area-inset-bottom))">
-  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em]
-   uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" 
-   onclick="location.href='index.html'">
-    <a href="/index.html"><i class="fa-solid fa-house text-[17px]"></i><span>Home</span></a>
-  </div>
-  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='menu.html'">
-    <a href="menu.html"><i class="fa-solid fa-utensils text-[17px]"></i><span>Menu</span></a>
-  </div>
-  <div>
-    <div class="w-[50px] h-[50px] rounded-[16px] flex items-center justify-center text-white cursor-pointer transition hover:scale-105 active:scale-95 -mt-3" style="background:linear-gradient(135deg,#EA580C,#96281b);box-shadow:0 4px 16px rgba(192,57,43,.45)" onclick="window.scrollTo({top:400,behavior:'smooth'})">
-      <i class="fa-regular fa-calendar-check text-[19px]"></i>
-    </div>
-  </div>
-  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='contact.html'">
-    <a href="contact.html"><i class="fa-solid fa-paper-plane text-[17px]"></i><span>Contact</span></a>
-  </div>
-  <div class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[.06em] uppercase text-textMid/45 cursor-pointer transition px-1.5 hover:text-textMid active:scale-95" onclick="location.href='profile.html'">
-    <a href="login.html"><i class="fa-regular fa-circle-user text-[17px]"></i><span>Profile</span></a>
-  </div>
-</nav>
+<nav
+    class="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-white/95 backdrop-blur-md border-t border-orange-100 flex items-center justify-around h-20 px-2">
+
+    <a href="index.html" class="flex flex-col items-center gap-1 px-3 py-2 text-orange-500">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+      </svg>
+      <span class="text-xs font-semibold">Home</span>
+    </a>
+
+    <a href="menu.html" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+      <span class="text-xs font-semibold">Menu</span>
+    </a>
+
+    <!-- Cart — opens ONLY on click -->
+    <button onclick="openCart()" class="flex flex-col items-center gap-1 relative">
+      <div
+        class="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg -mt-7 border-4 border-white relative">
+        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+        </svg>
+        <!-- Badge on mobile cart button -->
+        <span id="mob-badge"
+          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full items-center justify-center leading-none">0</span>
+      </div>
+      <span class="text-xs font-semibold text-stone-400 mt-0.5">Cart</span>
+    </button>
+
+    <a href="/reserve.html" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      <span class="text-xs font-semibold">Reserve</span>
+    </a>
+
+    <a href="/login.html" class="flex flex-col items-center gap-1 px-3 py-2 text-stone-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <span class="text-xs font-semibold">Profile</span>
+    </a>
+
+  </nav>
 
 <script>
 /* ═══════════ STATE ═══════════ */
