@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Savoria — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Jost:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+           colors: {
+            orangePrimary: "#EA580C", redDeep: "#96281b", redPale: "#fdf0ee",
+            cream: "#f5f0eb", textDark: "#1a1210", textMid: "#4a3830",
+            borderSoft: "#e8ddd8", gold: "#b8963e", goldLight: "#d4af6a",
+          },
+          fontFamily: {
+            sans: ['DM Sans', 'sans-serif'],
+            serif: ['Cormorant Garamond', 'serif'],
+          },
+          keyframes: {
+            fadeSlideUp: { from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+            shimmer: { '0%,100%':{opacity:'0.4'}, '50%':{opacity:'1'} },
+            pulse_ring: { '0%':{transform:'scale(.95)',opacity:'1'}, '100%':{transform:'scale(1.15)',opacity:'0'} },
+          },
+          animation: {
+            'a1':'fadeSlideUp .55s .05s ease both',
+            'a2':'fadeSlideUp .55s .15s ease both',
+            'a3':'fadeSlideUp .55s .25s ease both',
+            'a4':'fadeSlideUp .55s .40s ease both',
+            'shimmer':'shimmer 3s ease infinite',
+          },
+          backgroundImage: {
+            'page-grad':'linear-gradient(160deg,#f5ede4 0%,#f0e4d8 40%,#e8d8cc 100%)',
+            'card-grad':'linear-gradient(160deg,#1f1410 0%,#1a1210 60%,#150f0c 100%)',
+            'btn-grad':'linear-gradient(135deg,#c0392b,#96281b)',
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="font-jost overflow-x-hidden min-h-screen" style="background:linear-gradient(160deg,#f5ede4 0%,#f0e4d8 40%,#e8d8cc 100%)">
+
+  <!-- decorative bg circles -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute rounded-full" style="top:-120px;right:-120px;width:600px;height:600px;background:radial-gradient(circle,rgba(192,57,43,.06) 0%,transparent 70%)"></div>
+    <div class="absolute rounded-full" style="bottom:-80px;left:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(184,150,62,.07) 0%,transparent 70%)"></div>
+    <!-- grid pattern -->
+    <div class="absolute inset-0 opacity-[.025]" style="background-image:linear-gradient(rgba(26,18,16,.8) 1px,transparent 1px),linear-gradient(90deg,rgba(26,18,16,.8) 1px,transparent 1px);background-size:48px 48px"></div>
+  </div>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="relative z-20 flex items-center justify-between px-5 sm:px-10 h-[72px] border-b border-textDark/8">
+    <a href="index.html" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 shrink-0">
+      Amber <em class="text-orange-500 not-italic">Kitchen</em>
+    </a>
+    <a href="index.html" class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.15em] text-textMid hover:text-gold transition">
+      <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Home
+    </a>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="relative z-10 min-h-[calc(100vh-72px)] flex items-center justify-center px-5 py-10">
+    <div class="w-full max-w-[440px]">
+
+      <!-- Logo area -->
+      <div class="text-center mb-8 animate-a1">
+        <div class="relative w-16 h-16 mx-auto mb-5">
+          <!-- pulse ring -->
+          <div class="absolute inset-0 rounded-2xl bg-orangePrimary/60 animate-ping" style="animation-duration:2.5s"></div>
+          <div class="relative w-16 h-16 rounded-2xl flex items-center justify-center
+           shadow-[0_8px_32px_rgba(192,57,43,.4)]" style="background:linear-gradient(135deg,#ed523e,#ec8175)">
+            <i class="fa-solid fa-utensils text-white text-xl"></i>
+          </div>
+        </div>
+        <h1 id="formTitle" class="font-playfair text-3xl font-black text-textDark mb-1">Welcome Back</h1>
+        <p id="formSubtitle" class="font-cormorant italic text-textMid/70 text-lg">Sign in to your Savoria account</p>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="flex gap-1.5 p-1.5 rounded-[14px] mb-6 animate-a2 border border-textDark/10" style="background:rgba(26,18,16,.06)">
+        <div id="tabLogin" onclick="switchTab('login')"
+          class="flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all bg-white text-textDark shadow-sm border border-borderSoft">
+          Sign In
+        </div>
+        <div id="tabRegister" onclick="switchTab('register')"
+          class="flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all text-textMid/50">
+          Create Account
+        </div>
+      </div>
+
+      <!-- ─────── CARD ─────── -->
+      <div class="relative rounded-[28px] p-7 border border-white/[.07] shadow-[0_32px_80px_rgba(26,18,16,.25)] animate-a3" style="background:linear-gradient(160deg,#1f1410 0%,#1a1210 60%,#150f0c 100%)">
+
+        <!-- subtle inner glow -->
+        <div class="absolute inset-0 rounded-[28px] pointer-events-none" style="background:linear-gradient(135deg,rgba(184,150,62,.04) 0%,transparent 60%)"></div>
+
+        <!-- top accent line -->
+        <div class="absolute top-0 left-8 right-8 h-px rounded-full" style="background:linear-gradient(90deg,transparent,rgba(184,150,62,.4),transparent)"></div>
+
+        <!-- ── SIGN IN FORM ── -->
+        <form id="loginForm" onsubmit="handleLogin(event)" novalidate class="relative z-10">
+
+          <!-- Social logins -->
+          <div class="flex gap-2.5 mb-6">
+            <a href="#" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold text-white/60 border border-white/[.08] transition hover:bg-white/[.08] hover:border-white/20 hover:text-white" style="background:rgba(255,255,255,.04)">
+              <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google
+            </a>
+            <a href="#" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold text-white/60 border border-white/[.08] transition hover:bg-white/[.08] hover:border-white/20 hover:text-white" style="background:rgba(255,255,255,.04)">
+              <i class="fa-brands fa-apple text-white text-sm"></i>
+              Apple
+            </a>
+            <a href="#" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold text-white/60 border border-white/[.08] transition hover:bg-white/[.08] hover:border-white/20 hover:text-white" style="background:rgba(255,255,255,.04)">
+              <i class="fa-brands fa-facebook text-[#1877F2] text-sm"></i>
+              Facebook
+            </a>
+          </div>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex-1 h-px bg-white/[.07]"></div>
+            <span class="text-[10px] font-bold uppercase tracking-[.2em] text-white/20">or continue with email</span>
+            <div class="flex-1 h-px bg-white/[.07]"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Email Address</label>
+            <div class="relative">
+              <input type="email" id="loginEmail"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="your@email.com" autocomplete="email"/>
+              <i class="fa-regular fa-envelope absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm pointer-events-none"></i>
+            </div>
+            <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="loginEmailErr">Please enter a valid email address.</p>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35">Password</label>
+              <a href="#" onclick="showForgot()" class="text-[10px] text-gold/50 hover:text-gold transition font-semibold">Forgot password?</a>
+            </div>
+            <div class="relative">
+              <input type="password" id="loginPass"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="Enter your password" autocomplete="current-password"/>
+              <i class="fa-regular fa-eye absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm cursor-pointer hover:text-white/50 transition" id="toggleLoginPass" onclick="togglePass('loginPass','toggleLoginPass')"></i>
+            </div>
+            <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="loginPassErr">Password is required.</p>
+          </div>
+
+          <!-- Remember me -->
+          <div class="flex items-center gap-2.5 mb-6">
+            <input type="checkbox" id="rememberMe" class="hidden"/>
+            <div onclick="toggleCheck('rememberMe','rememberMeBox','rememberMeIcon')" id="rememberMeBox"
+              class="w-[18px] h-[18px] rounded-[5px] border-[1.5px] border-white/20 flex items-center justify-center flex-shrink-0 cursor-pointer transition-all duration-200"
+              style="background:transparent">
+              <i id="rememberMeIcon" class="fa-solid fa-check text-white" style="font-size:9px;display:none"></i>
+            </div>
+            <label onclick="toggleCheck('rememberMe','rememberMeBox','rememberMeIcon')" class="text-[12px] text-white/35 cursor-pointer select-none">Keep me signed in</label>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="loginBtn"
+            class="w-full py-4 rounded-[14px] text-white text-[12px] font-bold tracking-[.2em] uppercase cursor-pointer transition-all hover:opacity-90 hover:-translate-y-px active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 shadow-[0_6px_24px_rgba(192,57,43,.35)]"
+            style="background:linear-gradient(135deg,#c0392b,#96281b)">
+            <span id="loginBtnText"><i class="fa-solid fa-lock text-[10px] mr-2"></i>Sign In Securely</span>
+            <span id="loginBtnLoad" class="hidden"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Signing in…</span>
+          </button>
+
+          <!-- Global error -->
+          <div id="loginGlobalErr" class="hidden mt-4 p-3 rounded-xl border border-red-500/25 flex items-center gap-2.5 text-[12px] text-red-300" style="background:rgba(127,29,29,.25)">
+            <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+            <span>Incorrect email or password. Please try again.</span>
+          </div>
+
+          <!-- Demo hint -->
+          <p class="text-center text-[10px] text-white/15 mt-4">Demo: <span class="text-white/30 font-semibold">any@savoria.com</span> · password <span class="text-white/30 font-semibold">demo123</span></p>
+        </form>
+
+        <!-- ── REGISTER FORM ── -->
+        <form id="registerForm" class="hidden relative z-10" onsubmit="handleRegister(event)" novalidate>
+
+          <!-- Name row -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">First Name</label>
+              <div class="relative">
+                <input type="text" id="regFirst"
+                  class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                  style="background:rgba(255,255,255,.05)"
+                  placeholder="John" autocomplete="given-name"/>
+                <i class="fa-regular fa-user absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm pointer-events-none"></i>
+              </div>
+              <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="regFirstErr">Required.</p>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Last Name</label>
+              <input type="text" id="regLast"
+                class="w-full rounded-[14px] px-4 py-3.5 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="Doe" autocomplete="family-name"/>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Email Address</label>
+            <div class="relative">
+              <input type="email" id="regEmail"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="your@email.com" autocomplete="email"/>
+              <i class="fa-regular fa-envelope absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm pointer-events-none"></i>
+            </div>
+            <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="regEmailErr">Please enter a valid email.</p>
+          </div>
+
+          <!-- Phone -->
+          <div class="mb-4">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Phone <span class="opacity-40">(optional)</span></label>
+            <div class="relative">
+              <input type="tel" id="regPhone"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="+1 (555) 000-0000" autocomplete="tel"/>
+              <i class="fa-solid fa-phone absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm pointer-events-none"></i>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-2">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Password</label>
+            <div class="relative">
+              <input type="password" id="regPass"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+              <i class="fa-regular fa-eye absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm cursor-pointer hover:text-white/50 transition" id="toggleRegPass" onclick="togglePass('regPass','toggleRegPass')"></i>
+            </div>
+            <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="regPassErr">Password must be at least 8 characters.</p>
+            <!-- Strength bar -->
+            <div id="strengthBar" class="hidden h-[3px] rounded-full mt-2 overflow-hidden" style="background:rgba(255,255,255,.1)">
+              <div id="strengthFill" class="h-full rounded-full transition-all duration-300" style="width:0;background:#e74c3c"></div>
+            </div>
+            <p id="strengthLabel" class="hidden text-[10px] mt-1 transition-colors" style="color:rgba(255,255,255,.3)"></p>
+          </div>
+
+          <!-- Confirm password -->
+          <div class="mb-5">
+            <label class="block text-[10px] font-bold uppercase tracking-[.2em] text-white/35 mb-2">Confirm Password</label>
+            <div class="relative">
+              <input type="password" id="regConfirm"
+                class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+                style="background:rgba(255,255,255,.05)"
+                placeholder="Re-enter password" autocomplete="new-password"/>
+              <i class="fa-regular fa-eye absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm cursor-pointer hover:text-white/50 transition" id="toggleRegConfirm" onclick="togglePass('regConfirm','toggleRegConfirm')"></i>
+            </div>
+            <p class="hidden text-[11px] text-red-400 mt-1.5 pl-0.5" id="regConfirmErr">Passwords do not match.</p>
+          </div>
+
+          <!-- Terms -->
+          <div class="flex items-start gap-2.5 mb-5">
+            <input type="checkbox" id="agreeTerms" class="hidden"/>
+            <div onclick="toggleCheck('agreeTerms','agreeTermsBox','agreeTermsIcon')" id="agreeTermsBox"
+              class="w-[18px] h-[18px] rounded-[5px] border-[1.5px] border-white/20 flex items-center justify-center flex-shrink-0 mt-0.5 cursor-pointer transition-all duration-200"
+              style="background:transparent">
+              <i id="agreeTermsIcon" class="fa-solid fa-check text-white" style="font-size:9px;display:none"></i>
+            </div>
+            <label onclick="toggleCheck('agreeTerms','agreeTermsBox','agreeTermsIcon')" class="text-[12px] text-white/35 cursor-pointer select-none leading-relaxed">
+              I agree to Savoria's <a href="#" class="text-gold/60 hover:text-gold transition underline">Terms of Service</a> and <a href="#" class="text-gold/60 hover:text-gold transition underline">Privacy Policy</a>
+            </label>
+          </div>
+          <p class="hidden text-[11px] text-red-400 mb-3 pl-0.5" id="regTermsErr">You must agree to the terms to continue.</p>
+
+          <button type="submit"
+            class="w-full py-4 rounded-[14px] text-white text-[12px] font-bold tracking-[.2em] uppercase cursor-pointer transition-all hover:opacity-90 hover:-translate-y-px active:translate-y-0 shadow-[0_6px_24px_rgba(192,57,43,.35)]"
+            style="background:linear-gradient(135deg,#c0392b,#96281b)">
+            <span id="regBtnText"><i class="fa-solid fa-user-plus text-[10px] mr-2"></i>Create My Account</span>
+            <span id="regBtnLoad" class="hidden"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Creating account…</span>
+          </button>
+        </form>
+
+      </div>
+      <!-- end card -->
+
+      <!-- Bottom note -->
+      <p class="text-center text-[11px] text-textMid/30 mt-5 animate-a4">
+        By signing in, you agree to Savoria's
+        <a href="#" class="text-textMid/50 hover:text-gold transition">Terms</a> &amp;
+        <a href="#" class="text-textMid/50 hover:text-gold transition">Privacy Policy</a>
+      </p>
+
+      <!-- Forgot password panel -->
+      <div id="forgotPanel" class="hidden mt-4 rounded-[28px] p-7 border border-white/[.07] shadow-[0_32px_80px_rgba(26,18,16,.25)]" style="background:linear-gradient(160deg,#1f1410 0%,#1a1210 60%,#150f0c 100%)">
+        <div class="absolute top-0 left-8 right-8 h-px rounded-full" style="background:linear-gradient(90deg,transparent,rgba(184,150,62,.4),transparent)"></div>
+        <button onclick="hideForgot()" class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-white/30 hover:text-white/70 transition mb-5">
+          <i class="fa-solid fa-arrow-left text-[9px]"></i> Back to Sign In
+        </button>
+        <h3 class="font-playfair text-xl font-black text-white mb-1">Reset Password</h3>
+        <p class="font-cormorant italic text-white/40 text-base mb-5">Enter your email and we'll send a reset link.</p>
+        <div class="relative mb-4">
+          <input type="email" id="forgotEmail"
+            class="w-full rounded-[14px] px-4 py-3.5 pr-11 font-jost text-sm text-white outline-none transition-all placeholder:text-white/25 border-[1.5px] border-white/[.09] focus:border-redPrimary/60 focus:shadow-[0_0_0_3px_rgba(192,57,43,.1)]"
+            style="background:rgba(255,255,255,.05)"
+            placeholder="your@email.com"/>
+          <i class="fa-regular fa-envelope absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 text-sm pointer-events-none"></i>
+        </div>
+        <button onclick="sendReset()"
+          class="w-full py-4 rounded-[14px] text-white text-[12px] font-bold tracking-[.2em] uppercase cursor-pointer transition-all hover:opacity-90 hover:-translate-y-px shadow-[0_6px_24px_rgba(192,57,43,.35)]"
+          style="background:linear-gradient(135deg,#c0392b,#96281b)">
+          <i class="fa-regular fa-paper-plane text-[10px] mr-2"></i>Send Reset Link
+        </button>
+        <div id="forgotSuccess" class="hidden mt-4 p-3 rounded-xl border border-green-500/25 flex items-center gap-2.5 text-[12px] text-green-300" style="background:rgba(20,83,45,.25)">
+          <i class="fa-solid fa-circle-check flex-shrink-0"></i>
+          <span>Reset link sent! Check your inbox.</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer note -->
+  <div class="relative z-10 text-center pb-8">
+    <p class="font-cormorant italic text-textMid/25 text-sm">Where every dish tells a story</p>
+  </div>
+
+  <script>
+
+  /* ── Custom checkbox toggle ── */
+  function toggleCheck(inputId, boxId, iconId) {
+    const input = document.getElementById(inputId);
+    const box   = document.getElementById(boxId);
+    const icon  = document.getElementById(iconId);
+    input.checked = !input.checked;
+    if (input.checked) {
+      box.style.background = '#c0392b';
+      box.style.borderColor = '#c0392b';
+      icon.style.display = 'block';
+    } else {
+      box.style.background = 'transparent';
+      box.style.borderColor = 'rgba(255,255,255,0.2)';
+      icon.style.display = 'none';
+    }
+  }
+
+  /* ── Tab switch ── */
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+    document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+
+    const tl = document.getElementById('tabLogin');
+    const tr = document.getElementById('tabRegister');
+
+    if (isLogin) {
+      tl.className = 'flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all bg-white text-textDark shadow-sm border border-borderSoft';
+      tr.className = 'flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all text-textMid/50';
+    } else {
+      tr.className = 'flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all bg-white text-textDark shadow-sm border border-borderSoft';
+      tl.className = 'flex-1 py-2.5 rounded-[10px] text-center text-[11px] font-bold tracking-[.1em] uppercase cursor-pointer transition-all text-textMid/50';
+    }
+
+    document.getElementById('formTitle').textContent = isLogin ? 'Welcome Back' : 'Join Savoria';
+    document.getElementById('formSubtitle').textContent = isLogin
+      ? 'Sign in to your Savoria account'
+      : 'Create your fine dining account';
+    hideForgot(!isLogin);
+  }
+
+  /* ── Toggle password visibility ── */
+  function togglePass(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  }
+
+  /* ── Password strength ── */
+  function checkStrength(val) {
+    const bar = document.getElementById('strengthBar');
+    const fill = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    if (!val) { bar.classList.add('hidden'); label.classList.add('hidden'); return; }
+    bar.classList.remove('hidden'); label.classList.remove('hidden');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const levels = [
+      { w: '25%', bg: '#e74c3c', text: 'Weak' },
+      { w: '50%', bg: '#e67e22', text: 'Fair' },
+      { w: '75%', bg: '#f1c40f', text: 'Good' },
+      { w: '100%', bg: '#2ecc71', text: 'Strong' },
+    ];
+    const l = levels[score - 1] || levels[0];
+    fill.style.width = l.w; fill.style.background = l.bg;
+    label.textContent = l.text; label.style.color = l.bg;
+  }
+
+  /* ── Helpers ── */
+  function showErr(id, show = true) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', !show);
+  }
+  function markInput(id, isError) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isError) {
+      el.style.borderColor = 'rgba(231,76,60,.6)';
+    } else {
+      el.style.borderColor = '';
+    }
+  }
+  function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+  /* ── Account store helpers ── */
+  function getAccounts() {
+    try { return JSON.parse(localStorage.getItem('sv_accounts') || '{}'); } catch { return {}; }
+  }
+  function saveAccounts(accounts) {
+    localStorage.setItem('sv_accounts', JSON.stringify(accounts));
+  }
+
+  /* ── Login submit ── */
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const pass  = document.getElementById('loginPass').value;
+    let ok = true;
+
+    const vEmail = isValidEmail(email);
+    markInput('loginEmail', !vEmail); showErr('loginEmailErr', !vEmail);
+    if (!vEmail) ok = false;
+
+    const vPass = pass.length > 0;
+    markInput('loginPass', !vPass); showErr('loginPassErr', !vPass);
+    if (!vPass) ok = false;
+
+    if (!ok) return;
+
+    document.getElementById('loginBtnText').classList.add('hidden');
+    document.getElementById('loginBtnLoad').classList.remove('hidden');
+    document.getElementById('loginBtn').disabled = true;
+    document.getElementById('loginGlobalErr').classList.add('hidden');
+
+    setTimeout(() => {
+      const accounts = getAccounts();
+      const stored   = accounts[email];
+
+      // Check registered account OR demo credentials
+      const isDemoPass  = pass === 'demo123';
+      const isDemoEmail = email.endsWith('@savoria.com');
+      const isRegistered = stored && stored.password === pass;
+
+      if (isRegistered || (isDemoPass && isDemoEmail) || (isDemoPass && !stored)) {
+        // Build session user (prefer stored profile, fallback to demo)
+        const user = stored ? {
+          name:    stored.name,
+          email:   stored.email,
+          phone:   stored.phone || '',
+          joined:  stored.joined,
+          avatar:  stored.avatar,
+          member:  stored.member,
+          visits:  stored.visits,
+          orders:  stored.orders,
+          wishlist:stored.wishlist,
+        } : {
+          name:    email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+          email,
+          joined:  'March 2026',
+          avatar:  email.charAt(0).toUpperCase(),
+          member:  'Gold Member',
+          visits:  12, orders: 34, wishlist: 3,
+        };
+        localStorage.setItem('sv_user', JSON.stringify(user));
+        location.href = 'profile.html';
+      } else {
+        document.getElementById('loginGlobalErr').classList.remove('hidden');
+        document.getElementById('loginBtnText').classList.remove('hidden');
+        document.getElementById('loginBtnLoad').classList.add('hidden');
+        document.getElementById('loginBtn').disabled = false;
+      }
+    }, 1400);
+  }
+
+  /* ── Register submit ── */
+  function handleRegister(e) {
+    e.preventDefault();
+    const first   = document.getElementById('regFirst').value.trim();
+    const last    = document.getElementById('regLast').value.trim();
+    const email   = document.getElementById('regEmail').value.trim().toLowerCase();
+    const phone   = document.getElementById('regPhone').value.trim();
+    const pass    = document.getElementById('regPass').value;
+    const confirm = document.getElementById('regConfirm').value;
+    const agreed  = document.getElementById('agreeTerms').checked;
+    let ok = true;
+
+    const vFirst = first.length > 0;
+    markInput('regFirst', !vFirst); showErr('regFirstErr', !vFirst);
+    if (!vFirst) ok = false;
+
+    const vEmail = isValidEmail(email);
+    markInput('regEmail', !vEmail); showErr('regEmailErr', !vEmail);
+    if (!vEmail) ok = false;
+
+    // Check if email already registered
+    if (vEmail) {
+      const existing = getAccounts()[email];
+      if (existing) {
+        markInput('regEmail', true);
+        document.getElementById('regEmailErr').textContent = 'This email is already registered. Please sign in.';
+        showErr('regEmailErr', true);
+        ok = false;
+      } else {
+        document.getElementById('regEmailErr').textContent = 'Please enter a valid email.';
+      }
+    }
+
+    const vPass = pass.length >= 8;
+    markInput('regPass', !vPass); showErr('regPassErr', !vPass);
+    if (!vPass) ok = false;
+
+    const vConfirm = confirm === pass && confirm.length > 0;
+    markInput('regConfirm', !vConfirm); showErr('regConfirmErr', !vConfirm);
+    if (!vConfirm) ok = false;
+
+    showErr('regTermsErr', !agreed);
+    if (!agreed) ok = false;
+
+    if (!ok) return;
+
+    document.getElementById('regBtnText').classList.add('hidden');
+    document.getElementById('regBtnLoad').classList.remove('hidden');
+
+    setTimeout(() => {
+      const now = new Date();
+      const joined = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+      const accountData = {
+        name:     (first + ' ' + last).trim(),
+        email,
+        phone,
+        password: pass,           // stored for login verification
+        joined,
+        avatar:   first.charAt(0).toUpperCase(),
+        member:   'New Member',
+        visits:   0, orders: 0, wishlist: 0,
+      };
+
+      // Save to accounts store
+      const accounts = getAccounts();
+      accounts[email] = accountData;
+      saveAccounts(accounts);
+
+      // Also set active session (without password)
+      const { password: _pw, ...sessionUser } = accountData;
+      localStorage.setItem('sv_user', JSON.stringify(sessionUser));
+
+      location.href = 'profile.html';
+    }, 1400);
+  }
+
+  /* ── Forgot password ── */
+  function showForgot() {
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('forgotPanel').classList.remove('hidden');
+  }
+  function hideForgot(forRegister = false) {
+    document.getElementById('forgotPanel').classList.add('hidden');
+    document.getElementById('forgotSuccess').classList.add('hidden');
+    if (!forRegister) document.getElementById('loginForm').classList.remove('hidden');
+  }
+  function sendReset() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!isValidEmail(email)) return;
+    document.getElementById('forgotSuccess').classList.remove('hidden');
+  }
+  </script>
+</body>
+</html>
